@@ -116,7 +116,13 @@ public class FillUpList extends ListActivity {
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
     	@Override
 		public void onClick(View v) {
-		FillUp newFillUp = mDBProxy.insertFillUp(0, new Date(), 0f, 0f);
+    	FillUp lastFillUp = mStatistic.getLastFillUp();
+    	FillUp newFillUp = null;
+    	if(null != lastFillUp) {
+    		newFillUp = mDBProxy.insertFillUp(lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
+    	} else {
+    		newFillUp = mDBProxy.insertFillUp(0, new Date(), 0f, 0f);
+    	}
 		mStatistic.addFillUp(newFillUp);
 		Intent i = new Intent(v.getContext(), EditFillUp.class);
 		i.putExtra(FillUp.TABLE_NAME, newFillUp.getmId());

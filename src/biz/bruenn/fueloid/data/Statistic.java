@@ -59,6 +59,20 @@ public class Statistic implements BaseColumns {
 		return StatisticFillupColumns.getFillUpsForStatistic(mDBProxy.mOpenHelper, this);
 	}
 	
+	public FillUp getLastFillUp() {
+		final String[] args = new String[] {String.valueOf(mId)};		
+		final String queryMinMaxDistance = "SELECT " + FillUp.COLID + ", " +
+			"MAX(" + FillUp.COLDISTANCE + ") " +
+			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
+		
+		Cursor c = this.protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getColumnCount() == 2) {
+			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
+			return mDBProxy.getFillUp(id);
+		}		
+		return null;		
+	}
+	
 	public float getLiter() {
 		final String[] args = new String[] {String.valueOf(mId)};		
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
