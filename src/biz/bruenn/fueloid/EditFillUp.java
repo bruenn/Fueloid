@@ -26,6 +26,8 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -61,48 +63,38 @@ public class EditFillUp extends Activity {
         
         mDate = (TextView)findViewById(R.id.fillupDate);
         if(null != mDate) {
-        	mDate.setOnClickListener(mDateClickListener);	
+        	mDate.setOnClickListener(mOnClickListener);	
         }
         
         mDistance = (EditText)findViewById(R.id.fillupDistance);
-        if(null != mDistance) {
-        	mDistance.setOnFocusChangeListener(mTextChangedListener);
+        mDistanceSeeker = (SeekBar)findViewById(R.id.fillupDistanceSeeker);
+        if(null != mDistanceSeeker) {
+        	mDistanceSeeker.setOnSeekBarChangeListener(mSeekBarChangeListener);
         }
         
-        mDistanceSeeker = (SeekBar)findViewById(R.id.fillupDistanceSeeker);
-        mDistanceSeeker.setOnSeekBarChangeListener(mSeekBarChangeListener);
-        
         mDistanceDec = (Button)findViewById(R.id.fillupDistanceDec);
-        mDistanceDec.setOnClickListener(mOnClickListener);
+        if(null != mDistanceDec) {
+        	mDistanceDec.setOnClickListener(mOnClickListener);
+        }
         
         mDistanceInc = (Button)findViewById(R.id.fillupDistanceInc);
-        mDistanceInc.setOnClickListener(mOnClickListener);
+        if(null != mDistanceInc) {
+        	mDistanceInc.setOnClickListener(mOnClickListener);
+        }
         
         mLiter = (EditText)findViewById(R.id.fillupLiter);
         if(null != mLiter) {
-        	mLiter.setOnFocusChangeListener(mTextChangedListener);
+        	mLiter.addTextChangedListener(mLiterChangedListener);
         }
         
         mMoney = (EditText)findViewById(R.id.fillupMoney);
         if(null != mMoney) {
-        	mMoney.setOnFocusChangeListener(mTextChangedListener);
+        	mMoney.addTextChangedListener(mMoneyChangedListener);
         }
         
         mTime = (TextView)findViewById(R.id.fillupTime);
         if(null != mTime) {
-        	mTime.setOnClickListener(mTimeClickListener);
-        }
-        
-        
-        if(null == mFillUp) {
-        	mDate.setText("object not found!");
-        } else {
-        	mDate.setOnClickListener(mDateClickListener);
-        	
-        	mDate.setText(mFillUp.getmId() + " - " + mFillUp.getmDate()+ ": "
-        			+ mFillUp.getmDistance() + "km, "
-        			+ mFillUp.getmMoney() + "€, "
-        			+ mFillUp.getmLiter() + "l");
+        	mTime.setOnClickListener(mOnClickListener);
         }
     }
     
@@ -142,6 +134,12 @@ public class EditFillUp extends Activity {
 		@Override
 		public void onClick(View v) {
 			switch(v.getId()) {
+			case R.id.fillupDate:
+				showDialog(DATE_PICKER_DIALOG);
+				break;
+			case R.id.fillupTime:
+				showDialog(TIME_PICKER_DIALOG);
+				break;
 			case R.id.fillupDistanceDec:
 				final int oldDistance = mFillUp.getmDistance();
 				if(oldDistance > 0) {
@@ -155,45 +153,6 @@ public class EditFillUp extends Activity {
 			updateText();
 		}
 	};
-    
-    private View.OnClickListener mDateClickListener = new View.OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			showDialog(DATE_PICKER_DIALOG);
-		}
-	};
-	
-	private View.OnClickListener mTimeClickListener = new View.OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			showDialog(TIME_PICKER_DIALOG);
-		}
-	};
-	
-	private View.OnFocusChangeListener mTextChangedListener = new View.OnFocusChangeListener() {
-		
-		@Override
-		public void onFocusChange(View v, boolean hasFocus) {
-			if(hasFocus) {
-				//we do nothing, when getting in focus
-			} else {
-				//we are leaving focus
-				switch(v.getId()) {
-				case R.id.fillupDistance:
-					mFillUp.setmDistance(Integer.parseInt(mDistance.getText().toString()));
-					break;
-				case R.id.fillupLiter:
-					mFillUp.setmLiter(Float.parseFloat(mLiter.getText().toString()));
-					break;
-				case R.id.fillupMoney:
-					mFillUp.setmMoney(Float.parseFloat(mMoney.getText().toString()));
-					break;
-				}
-			}
-		}
-	};
 
 	private SeekBar.OnSeekBarChangeListener mSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
 		
@@ -201,8 +160,6 @@ public class EditFillUp extends Activity {
 		
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-			// TODO Auto-generated method stub
-			
 		}
 		
 		@Override
@@ -227,6 +184,46 @@ public class EditFillUp extends Activity {
 				int dayOfMonth) {
 			mFillUp.setDate(year - 1900, monthOfYear, dayOfMonth);
 			updateText();
+		}
+	};
+	
+	private TextWatcher mLiterChangedListener = new TextWatcher() {
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			mFillUp.setmLiter(Float.parseFloat(s.toString()));
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+			// we don't need this			
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			// we don't need this	
+		}
+	};
+	
+	private TextWatcher mMoneyChangedListener = new TextWatcher() {
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			mFillUp.setmMoney(Float.parseFloat(s.toString()));
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+			// we don't need this			
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			// we don't need this	
 		}
 	};
 	

@@ -20,7 +20,6 @@ package biz.bruenn.fueloid.data;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 /**
@@ -66,7 +65,7 @@ public class Statistic implements BaseColumns {
 			"MAX(" + FillUp.COLDISTANCE + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = this.mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 2) {
 			return c.getInt(1) - c.getInt(0);
 		}		
@@ -83,7 +82,7 @@ public class Statistic implements BaseColumns {
 			"MAX(" + FillUp.COLDISTANCE + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = this.mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 2) {
 			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
 			return mDBProxy.getFillUp(id);
@@ -96,7 +95,7 @@ public class Statistic implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
@@ -120,7 +119,7 @@ public class Statistic implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
@@ -137,26 +136,5 @@ public class Statistic implements BaseColumns {
 
 	public boolean removeFillUp(FillUp f) {
 		return StatisticFillupColumns.delete(mDBProxy.mOpenHelper, this, f);
-	}
-	
-	private Cursor protectedRawQuery(String query, String[] selectionArgs) {
-		SQLiteDatabase db = null;
-		Cursor result = null;
-		try {
-			db = mDBProxy.mOpenHelper.getReadableDatabase();
-			if(null != db) {
-				result = db.rawQuery(query, selectionArgs);
-				if(null != result) {
-					result.moveToFirst();
-				}
-			}
-			return result;
-	    } catch (Exception e) {
-	    	return null;    		
-	    } finally {
-	    	if(null != db ) {
-	    		db.close();
-	    	}
-	    }
 	}
 }

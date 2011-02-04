@@ -20,6 +20,8 @@ package biz.bruenn.fueloid.data;
 
 import java.util.Date;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.provider.BaseColumns;
 
 /**
@@ -47,6 +49,7 @@ public class FillUp implements BaseColumns {
 			+ LITER +" REAL, "
 			+ MONEY + " REAL);";
 	
+	private FueloidDBProxy.DatabaseHelper mDBHelper;
 	private long mId;
 	private int mDistance;
 	private Date mFillDate;
@@ -61,7 +64,8 @@ public class FillUp implements BaseColumns {
 	 * @param liter
 	 * @param money
 	 */
-	public FillUp(long id, int distance, Date date, float liter, float money) {
+	public FillUp(Context context, long id, int distance, Date date, float liter, float money) {
+		mDBHelper = new FueloidDBProxy.DatabaseHelper(context);
 		mId = id;
 		mDistance = distance;
 		mFillDate = date;
@@ -113,6 +117,22 @@ public class FillUp implements BaseColumns {
 
 	public final float getmMoney() {
 		return mMoney;
+	}
+	
+	/**
+	 * @return distance of the previous fill-up
+	 */
+	public int getPreviousDistance() {
+		final String[] args = new String[] {String.valueOf(mDistance)};		
+		final String queryLastDistance = "SELECT MAX(" + DISTANCE + ")" +
+			" FROM " + TABLE_NAME +
+			" WHERE " + DISTANCE + " < ?";
+		
+		Cursor c = null;//this.protectedRawQuery(queryLastDistance, args);
+		if(null != c && c.getColumnCount() == 1) {
+			return c.getInt(0);
+		}		
+		return 0;		
 	}
 
 	/**
