@@ -18,6 +18,8 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.util.Vector;
+
 import biz.bruenn.fueloid.data.FueloidDBProxy.DatabaseHelper;
 
 import android.content.ContentValues;
@@ -40,13 +42,32 @@ public class StatisticFillupColumns implements BaseColumns {
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ SID +" INTEGER, "
 			+ FID +" INTEGER);";
+	
+	public static void cleanUpFillUps(DatabaseHelper openHelper) {
+		Vector<Integer> liveIds = new Vector<Integer>();
+		String sqlGetFillUpIds = "SELECT _id FROM fillups";
+		String sqlGetLivingFillUpIds = "SELECT DISTINC SID FROM ltsf";
+		Cursor allIds = FueloidDBProxy.protectedRawQuery(openHelper, sqlGetFillUpIds, null);
+		Cursor cursorLiveIds = FueloidDBProxy.protectedRawQuery(openHelper, sqlGetLivingFillUpIds, null);
+		
+		while(cursorLiveIds.moveToNext()) {
+			liveIds.add(cursorLiveIds.getInt(0));
+		}
+		
+		while(allIds.moveToNext()) {
+			Integer i = allIds.getInt(0);
+			if(!liveIds.contains(i)) {
+				FillUp.deleteFillUp(openHelper, i.intValue());
+			}
+		}
+	}
 
 	public static boolean delete(DatabaseHelper dh, Statistic s, FillUp f) {
 		SQLiteDatabase db = null;
 		try {
 			db = dh.getWritableDatabase();
 			if(null != db) {
-				return 0 < db.delete(TABLE_NAME, SID + "=" + s.getmId() + " AND " + FID + "=" + f.getmId(), null);
+				db.delete(TABLE_NAME, SID + "=" + s.getmId() + " AND " + FID + "=" + f.getmId(), null);
 			}
 			return false;
 		} catch (Exception e) {

@@ -36,10 +36,10 @@ public class Statistic implements BaseColumns {
 			+ TITLE +" TEXT);";	
 	
 	
-	private FueloidDBProxy mDBProxy;
+	private FueloidDBProxy.DatabaseHelper mDBHelper;
 	private long mId;
 	public Statistic(Context context){
-		mDBProxy = new FueloidDBProxy(context);
+		mDBHelper = new FueloidDBProxy.DatabaseHelper(context);
 		mId = 1;
 	}
 
@@ -52,7 +52,7 @@ public class Statistic implements BaseColumns {
 	 * @param newItem
 	 */
 	public void addFillUp(FillUp newItem) {
-		StatisticFillupColumns.insert(mDBProxy.mOpenHelper, this, newItem);
+		StatisticFillupColumns.insert(mDBHelper, this, newItem);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class Statistic implements BaseColumns {
 			"MAX(" + FillUp.COLDISTANCE + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
+		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 2) {
 			return c.getInt(1) - c.getInt(0);
 		}		
@@ -73,7 +73,7 @@ public class Statistic implements BaseColumns {
 	}
 	
 	public Cursor getFillUpsCursor() {
-		return StatisticFillupColumns.getFillUpsForStatistic(mDBProxy.mOpenHelper, this);
+		return StatisticFillupColumns.getFillUpsForStatistic(mDBHelper, this);
 	}
 	
 	public FillUp getLastFillUp() {
@@ -82,10 +82,10 @@ public class Statistic implements BaseColumns {
 			"MAX(" + FillUp.COLDISTANCE + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = this.mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
+		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 2) {
 			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
-			return mDBProxy.getFillUp(id);
+			return FillUp.getFillUp(mDBHelper, id);
 		}		
 		return null;		
 	}
@@ -95,7 +95,7 @@ public class Statistic implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
+		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
@@ -119,7 +119,7 @@ public class Statistic implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = mDBProxy.protectedRawQuery(this, queryMinMaxDistance, args);
+		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
@@ -135,6 +135,7 @@ public class Statistic implements BaseColumns {
 	}
 
 	public boolean removeFillUp(FillUp f) {
-		return StatisticFillupColumns.delete(mDBProxy.mOpenHelper, this, f);
+		StatisticFillupColumns.delete(mDBHelper, this, f);
+		return true;
 	}
 }

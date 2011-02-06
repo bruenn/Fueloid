@@ -27,7 +27,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.Date;
-import java.util.Vector;
 
 /**
  * Provides access to a fueloid database.
@@ -40,42 +39,10 @@ public class FueloidDBProxy {
     private static final int DATABASE_VERSION = 12;
     //public static final String FILLUPS_TABLE_NAME = "fillups";
 
-    public Context mContext;
     public DatabaseHelper mOpenHelper;
     
     public FueloidDBProxy(Context context) {
-    	mContext = context;
     	mOpenHelper = new DatabaseHelper(context);
-    }
-    
-    public void deleteFillUp(long id) {
-    	SQLiteDatabase db = null;
-    	try {
-    		db = mOpenHelper.getWritableDatabase();
-    		db.delete(FillUp.TABLE_NAME, FillUp._ID + "=" + id, null);
-    	} catch (Exception e) {
-    		
-    	} finally {
-    		if(null != db) {
-    			db.close();
-    		}
-    	}
-    }
-    
-    public Cursor getFillUpsCursor() {
-    	SQLiteDatabase db = null;
-    	try {
-    		db = this.mOpenHelper.getReadableDatabase();
-    		Cursor c = db.query(FillUp.TABLE_NAME, null, null, null, null, null, null);
-    		if(null != c) {
-    			c.moveToFirst();
-    		}
-    		return c;
-    	} catch (Exception e) {
-    		return null;
-    	} finally {
-    		db.close();
-    	}
     }
     
     /**
@@ -90,7 +57,7 @@ public class FueloidDBProxy {
     		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
     		if(c.moveToFirst())
     		{
-        		return new FillUp(mContext, id, c.getInt(0), new Date(c.getLong(1)), c.getFloat(2), c.getFloat(3));
+        		return new FillUp(mOpenHelper.mContext, id, c.getInt(0), new Date(c.getLong(1)), c.getFloat(2), c.getFloat(3));
     		}
     		return null;
     	} catch (Exception e) {
@@ -122,7 +89,7 @@ public class FueloidDBProxy {
     		values.put(FillUp.MONEY, money);
     		long id = db.insert(FillUp.TABLE_NAME, null, values);
     		if(-1 != id) {
-    			return new FillUp(mContext, id, distance, date, liter, money);
+    			return new FillUp(mOpenHelper.mContext, id, distance, date, liter, money);
     		}
     		return null;
     	} catch (SQLiteException e) {
@@ -153,11 +120,11 @@ public class FueloidDBProxy {
     	}
     }
     
-    Cursor protectedRawQuery(Statistic statistic, String query, String[] selectionArgs) {
+    public static Cursor protectedRawQuery(DatabaseHelper openHelper, String query, String[] selectionArgs) {
 		SQLiteDatabase db = null;
 		Cursor result = null;
 		try {
-			db = mOpenHelper.getReadableDatabase();
+			db = openHelper.getReadableDatabase();
 			if(null != db) {
 				result = db.rawQuery(query, selectionArgs);
 				if(null != result) {
@@ -178,9 +145,11 @@ public class FueloidDBProxy {
      * This class helps open, create, and upgrade the database file.
      */
     public static class DatabaseHelper extends SQLiteOpenHelper {
-
+    	public Context mContext;
+    	
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
+            mContext = context;
         }
 
         @Override

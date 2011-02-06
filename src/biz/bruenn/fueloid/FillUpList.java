@@ -54,6 +54,7 @@ public class FillUpList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
          
         mDBProxy = new FueloidDBProxy(this);
         mStatistic = new Statistic(this);
@@ -85,6 +86,7 @@ public class FillUpList extends ListActivity {
     		FillUp f = this.mDBProxy.getFillUp(info.id);
     		mStatistic.removeFillUp(f);
     		mFillUpAdapter.changeCursor(mStatistic.getFillUpsCursor());
+    		updateText();
     		return true;
     	default:
     		return super.onContextItemSelected(item);
@@ -94,6 +96,10 @@ public class FillUpList extends ListActivity {
     @Override
     public void onResume() {
     	super.onResume();    	
+    	updateText();
+    }
+    
+    private void updateText() {
     	//reread fillup list from database, by updating the list adapters cursor
     	((FillUpAdapter)this.getListAdapter()).changeCursor(StatisticFillupColumns.getFillUpsForStatistic(mDBProxy.mOpenHelper, mStatistic));
     	TextView mDistance = (TextView)this.findViewById(R.id.statisticDistance);
@@ -102,9 +108,9 @@ public class FillUpList extends ListActivity {
     					+ mStatistic.getLiter() + "l|"
     					+ mStatistic.getLiterPerDistance() + "l/km|"
     					+ mStatistic.getMoneyPerLiter() + "€/l");
-    }
-    
-    private class FillUpAdapter extends CursorAdapter {
+	}
+
+	private class FillUpAdapter extends CursorAdapter {
 
 		public FillUpAdapter(Context context, Cursor c) {
 			super(context, c, true);
@@ -128,7 +134,6 @@ public class FillUpList extends ListActivity {
 			final View view = LayoutInflater.from(context).inflate(R.layout.fillup_row, parent, false);
 			return view;
 		}
-    	
     }
     
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {

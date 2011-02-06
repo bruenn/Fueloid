@@ -22,6 +22,7 @@ import java.util.Date;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 /**
@@ -177,4 +178,45 @@ public class FillUp implements BaseColumns {
 	public void setmMoney(float newVal) {
 		mMoney = newVal;
 	}
+	
+
+    
+    public static void deleteFillUp(FueloidDBProxy.DatabaseHelper openHelper, long id) {
+    	SQLiteDatabase db = null;
+    	try {
+    		db = openHelper.getWritableDatabase();
+    		db.delete(FillUp.TABLE_NAME, FillUp._ID + "=" + id, null);
+    	} catch (Exception e) {
+    		
+    	} finally {
+    		if(null != db) {
+    			db.close();
+    		}
+    	}
+    }
+	
+	/**
+     * Read FillUp from database
+     * @param id
+     * @return FillUp object from database or null if <id> was not found
+     */
+    public static FillUp getFillUp(FueloidDBProxy.DatabaseHelper openHelper, long id) {
+    	SQLiteDatabase db = null;
+    	try {
+    		db = openHelper.getReadableDatabase();
+    		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
+    		if(c.moveToFirst())
+    		{
+        		return new FillUp(openHelper.mContext, id, c.getInt(0), new Date(c.getLong(1)), c.getFloat(2), c.getFloat(3));
+    		}
+    		return null;
+    	} catch (Exception e) {
+    		return null;
+    		
+    	} finally {
+    		if(null != db) {
+    			db.close();
+    		}
+    	}
+    }
 }

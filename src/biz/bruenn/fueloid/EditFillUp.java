@@ -191,7 +191,11 @@ public class EditFillUp extends Activity {
 
 		@Override
 		public void afterTextChanged(Editable s) {
-			mFillUp.setmLiter(Float.parseFloat(s.toString()));
+			if(s.length() > 0) {
+				mFillUp.setmLiter(Float.parseFloat(s.toString()));
+			} else {
+				mFillUp.setmLiter(0f);
+			}
 		}
 
 		@Override
@@ -211,7 +215,11 @@ public class EditFillUp extends Activity {
 
 		@Override
 		public void afterTextChanged(Editable s) {
-			mFillUp.setmMoney(Float.parseFloat(s.toString()));
+			if(s.length() > 0) {
+				mFillUp.setmMoney(Float.parseFloat(s.toString()));
+			} else {
+				mFillUp.setmMoney(0f);
+			}
 		}
 
 		@Override
