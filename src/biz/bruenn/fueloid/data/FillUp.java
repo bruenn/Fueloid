@@ -19,7 +19,6 @@
 package biz.bruenn.fueloid.data;
 
 import java.util.Date;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -50,6 +49,8 @@ public class FillUp implements BaseColumns {
 			+ LITER +" REAL, "
 			+ MONEY + " REAL);";
 	
+	private static final int MAX_DISTANCE = 200;
+	
 	private FueloidDBProxy.DatabaseHelper mDBHelper;
 	private long mId;
 	private int mDistance;
@@ -73,8 +74,6 @@ public class FillUp implements BaseColumns {
 		mLiter = liter;
 		mMoney = money;
 	}
-	
-	
 
 	public void finalize() throws Throwable {
 
@@ -121,19 +120,33 @@ public class FillUp implements BaseColumns {
 	}
 	
 	/**
-	 * @return distance of the previous fill-up
+	 * @return the previous distance
 	 */
-	public int getPreviousDistance() {
-		final String[] args = new String[] {String.valueOf(mDistance)};		
-		final String queryLastDistance = "SELECT MAX(" + DISTANCE + ")" +
-			" FROM " + TABLE_NAME +
-			" WHERE " + DISTANCE + " < ?";
-		
-		Cursor c = null;//this.protectedRawQuery(queryLastDistance, args);
-		if(null != c && c.getColumnCount() == 1) {
+	public int getNextDistance() {
+		final String[] args = new String[] {String.valueOf(mFillDate.getTime())};		
+		// TODO refactor query use SQLiteQueryBuilder
+		final String queryNextDistance = "SELECT " + DISTANCE +
+			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MIN(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"> ?)";
+		Cursor c = mDBHelper.protectedRawQuery(queryNextDistance, args);
+		if(null != c && c.moveToFirst()) {
 			return c.getInt(0);
 		}		
-		return 0;		
+		return mDistance + MAX_DISTANCE;
+	}
+	
+	/**
+	 * @return the previous distance
+	 */
+	public int getPreviousDistance() {
+		final String[] args = new String[] {String.valueOf(mFillDate.getTime())};		
+		// TODO refactor query use SQLiteQueryBuilder
+		final String queryPreviousDistance = "SELECT " + DISTANCE +
+			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MAX(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"< ?)";
+		Cursor c = mDBHelper.protectedRawQuery(queryPreviousDistance, args);
+		if(null != c && c.moveToFirst()) {
+			return c.getInt(0);
+		}		
+		return 0;
 	}
 
 	/**
@@ -204,10 +217,10 @@ public class FillUp implements BaseColumns {
     	SQLiteDatabase db = null;
     	try {
     		db = openHelper.getReadableDatabase();
-    		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
-    		if(c.moveToFirst())
+    		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
+    		if(null != c && c.moveToFirst())
     		{
-        		return new FillUp(openHelper.mContext, id, c.getInt(0), new Date(c.getLong(1)), c.getFloat(2), c.getFloat(3));
+        		return FillUp.getFillUp(openHelper.mContext, c);
     		}
     		return null;
     	} catch (Exception e) {
@@ -219,4 +232,27 @@ public class FillUp implements BaseColumns {
     		}
     	}
     }
+    
+    /**
+     * Builds an fill-up object from a database cursor
+     * @param context current context
+     * @param cursor cursor to a database fill-up column
+     * @return fill-up object representation or null if cursor was flawed
+     */
+	public static FillUp getFillUp(Context context, Cursor cursor) {	
+		if((null != cursor) && (cursor.getColumnCount() == 5)) {
+			try {
+				int id = cursor.getInt(cursor.getColumnIndexOrThrow(_ID));
+				int distance = cursor.getInt(cursor.getColumnIndexOrThrow(DISTANCE));
+				Date fillDate = new Date(cursor.getLong(cursor.getColumnIndexOrThrow(FILLDATE)));
+				float liter = cursor.getFloat(cursor.getColumnIndexOrThrow(LITER));
+				float money = cursor.getFloat(cursor.getColumnIndexOrThrow(MONEY));
+				return new FillUp(context, id, distance, fillDate, liter, money);
+			} catch (IllegalArgumentException e) {
+				return null;
+			} finally {
+			}
+		}
+		return null;
+	}
 }

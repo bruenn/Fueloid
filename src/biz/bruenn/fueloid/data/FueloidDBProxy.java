@@ -36,38 +36,13 @@ public class FueloidDBProxy {
     private static final String TAG = "FueloidDBAdapter";
 
     private static final String DATABASE_NAME = "fueloid3.db";
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 14;
     //public static final String FILLUPS_TABLE_NAME = "fillups";
 
     public DatabaseHelper mOpenHelper;
     
     public FueloidDBProxy(Context context) {
     	mOpenHelper = new DatabaseHelper(context);
-    }
-    
-    /**
-     * Read FillUp from database
-     * @param id
-     * @return FillUp object from database or null if <id> was not found
-     */
-    public FillUp getFillUp(long id) {
-    	SQLiteDatabase db = null;
-    	try {
-    		db = mOpenHelper.getReadableDatabase();
-    		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
-    		if(c.moveToFirst())
-    		{
-        		return new FillUp(mOpenHelper.mContext, id, c.getInt(0), new Date(c.getLong(1)), c.getFloat(2), c.getFloat(3));
-    		}
-    		return null;
-    	} catch (Exception e) {
-    		return null;
-    		
-    	} finally {
-    		if(null != db) {
-    			db.close();
-    		}
-    	}
     }
     
     /**
@@ -119,27 +94,6 @@ public class FueloidDBProxy {
     		}
     	}
     }
-    
-    public static Cursor protectedRawQuery(DatabaseHelper openHelper, String query, String[] selectionArgs) {
-		SQLiteDatabase db = null;
-		Cursor result = null;
-		try {
-			db = openHelper.getReadableDatabase();
-			if(null != db) {
-				result = db.rawQuery(query, selectionArgs);
-				if(null != result) {
-					result.moveToFirst();
-				}
-			}
-			return result;
-	    } catch (Exception e) {
-	    	return null;    		
-	    } finally {
-	    	if(null != db ) {
-	    		db.close();
-	    	}
-	    }
-	}
 
 	/**
      * This class helps open, create, and upgrade the database file.
@@ -168,5 +122,34 @@ public class FueloidDBProxy {
             db.execSQL("DROP TABLE IF EXISTS " + StatisticFillupColumns.TABLE_NAME);
             onCreate(db);
         }
+        
+        /**
+         * Wrapper to SQLiteDatabase.rawQuery()
+         * If an exception occurs it would be catch inside and null
+         * will be returned
+         * @param query
+         * @param selectionArgs
+         * @return null if query failed
+         */
+        public Cursor protectedRawQuery(String query, String[] selectionArgs) {
+    		SQLiteDatabase db = null;
+    		Cursor result = null;
+    		try {
+    			db = getReadableDatabase();
+    			if(null != db) {
+    				result = db.rawQuery(query, selectionArgs);
+    				if(null != result) {
+    					result.moveToFirst();
+    				}
+    			}
+    			return result;
+    	    } catch (Exception e) {
+    	    	return null;    		
+    	    } finally {
+    	    	if(null != db ) {
+    	    		db.close();
+    	    	}
+    	    }
+    	}
     }
 }

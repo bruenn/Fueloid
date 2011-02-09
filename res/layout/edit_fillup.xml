@@ -26,40 +26,44 @@
 	    	android:textSize="24sp"
     	/>
  	</LinearLayout>
- 	 	<LinearLayout
+ 	<LinearLayout
  		android:layout_width="fill_parent"
- 		android:layout_height="50dp">
+	 	android:layout_height="50dp">
 		<EditText  
 	    	android:id="@+id/fillupDistance"
 	    	android:inputType="number"
 	    	android:layout_width="200dp" 
 	    	android:layout_height="wrap_content"
-    	/>
-    	<TextView
-    		android:layout_width="wrap_content"
-    		android:layout_height="wrap_content"
-    		android:text="km"
-    	/>
+	   	/>
+	   	<TextView
+	   		android:layout_width="wrap_content"
+	   		android:layout_height="wrap_content"
+	   		android:text="km distance"
+	   	/>
+    </LinearLayout>
+ 	<LinearLayout
+ 		android:layout_width="fill_parent"
+ 		android:layout_height="50dp">
     	<Button
     		android:id="@+id/fillupDistanceDec"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content"
-    		android:text="-"
+    		android:text="  -  "
     	/>
     	<Button
     		android:id="@+id/fillupDistanceInc"
     		android:layout_width="wrap_content"
     		android:layout_height="wrap_content"
-    		android:text="+"
+    		android:text="  +  "
     	/>
- 		</LinearLayout>
- 	<SeekBar
- 		android:id="@+id/fillupDistanceSeeker"
-    	android:layout_width="fill_parent"
-    	android:layout_height="wrap_content"
-    	android:max="2000"
-    	android:progress="0"	
- 	/>
+	 	<SeekBar
+	 		android:id="@+id/fillupDistanceSeeker"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:max="1000"
+	    	android:progress="0"	
+	 	/>
+ 	</LinearLayout>
 	<EditText  
 	    android:id="@+id/fillupLiter"
 	    android:inputType="numberDecimal"

@@ -58,7 +58,13 @@ public class EditFillUp extends Activity {
         
         Intent i = getIntent();
         
-        mFillUp = mDBProxy.getFillUp(i.getLongExtra(FillUp.TABLE_NAME, 0));
+        mFillUp = FillUp.getFillUp(mDBProxy.mOpenHelper, i.getLongExtra(FillUp.TABLE_NAME, 0));
+        if(null == mFillUp) {
+        	TextView tv = new TextView(this);
+        	tv.setText("Error when reading database");
+        	setContentView(tv);
+        	return;
+        }
         setContentView(R.layout.edit_fillup);
         
         mDate = (TextView)findViewById(R.id.fillupDate);
@@ -67,6 +73,9 @@ public class EditFillUp extends Activity {
         }
         
         mDistance = (EditText)findViewById(R.id.fillupDistance);
+        if(null != mDistance) {
+        	mDistance.addTextChangedListener(mDistanceChangedListener);
+        }
         mDistanceSeeker = (SeekBar)findViewById(R.id.fillupDistanceSeeker);
         if(null != mDistanceSeeker) {
         	mDistanceSeeker.setOnSeekBarChangeListener(mSeekBarChangeListener);
@@ -122,12 +131,27 @@ public class EditFillUp extends Activity {
     }
     
     private void updateText() {
-    	mDate.setText(mFillUp.getDateYear() + "-" + mFillUp.getDateMonth() + "-" + mFillUp.getDateDay());
-    	mDistance.setText(String.valueOf(mFillUp.getmDistance()));
-    	mLiter.setText(String.valueOf(mFillUp.getmLiter()));
-    	mMoney.setText(String.valueOf(mFillUp.getmMoney()));
-    	mTime.setText(mFillUp.getDateHours() + ":" + mFillUp.getDateMinutes());
+    	if(null != mFillUp) {
+	    	mDate.setText(mFillUp.getDateYear() + "-" + mFillUp.getDateMonth() + "-" + mFillUp.getDateDay());
+	    	mDistance.setText(String.valueOf(mFillUp.getmDistance()));
+	    	mLiter.setText(String.valueOf(mFillUp.getmLiter()));
+	    	mMoney.setText(String.valueOf(mFillUp.getmMoney()));
+	    	mTime.setText(mFillUp.getDateHours() + ":" + mFillUp.getDateMinutes());
+	    	
+	    	updateDistance();
+    	}
     }
+
+	private void updateDistance() {
+		int previousDistance = mFillUp.getPreviousDistance();
+		this.mDistanceSeeker.setMax(mFillUp.getNextDistance() - previousDistance);
+		if(mFillUp.getmDistance() < previousDistance) {
+			mFillUp.setmDistance(previousDistance);
+		}
+		this.mDistanceSeeker.setProgress(mFillUp.getmDistance() - previousDistance);
+		
+		mTime.setText(":" + mFillUp.getPreviousDistance() + "-" + mFillUp.getNextDistance());
+	}
     
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		
@@ -160,10 +184,12 @@ public class EditFillUp extends Activity {
 		
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
+			updateDistance();
 		}
 		
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
+			updateDistance();
 			mOldDistance = mFillUp.getmDistance() - seekBar.getProgress();
 		}
 		
@@ -172,7 +198,8 @@ public class EditFillUp extends Activity {
 				boolean fromUser) {
 			if(fromUser) {
 				mFillUp.setmDistance(mOldDistance+progress);
-				updateText();
+				mDistance.setText(String.valueOf(mFillUp.getmDistance()));
+				//updateDistance();
 			}
 		}
 	};
@@ -185,6 +212,31 @@ public class EditFillUp extends Activity {
 			mFillUp.setDate(year - 1900, monthOfYear, dayOfMonth);
 			updateText();
 		}
+	};
+	
+	private TextWatcher mDistanceChangedListener = new TextWatcher() {
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			if(s.length() > 0) {
+				mFillUp.setmDistance(Integer.parseInt(s.toString()));
+			} else {
+				mFillUp.setmDistance(0);
+			}
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+			// we don't need this
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			// we don't need this
+		}
+		
 	};
 	
 	private TextWatcher mLiterChangedListener = new TextWatcher() {

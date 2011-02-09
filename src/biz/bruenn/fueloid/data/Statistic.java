@@ -65,7 +65,7 @@ public class Statistic implements BaseColumns {
 			"MAX(" + FillUp.COLDISTANCE + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 2) {
 			return c.getInt(1) - c.getInt(0);
 		}		
@@ -77,25 +77,25 @@ public class Statistic implements BaseColumns {
 	}
 	
 	public FillUp getLastFillUp() {
-		final String[] args = new String[] {String.valueOf(mId)};		
-		final String queryMinMaxDistance = "SELECT " + FillUp.COLID + ", " +
-			"MAX(" + FillUp.COLDISTANCE + ") " +
-			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
-		
-		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
-		if(null != c && c.getColumnCount() == 2) {
+		final String[] args = new String[] { String.valueOf(mId) };
+		final String queryMinMaxDistance = "SELECT " + FillUp.COLID + ", "
+				+ "MAX(" + FillUp.COLDISTANCE + ") " + "FROM "
+				+ StatisticFillupColumns.FILLUPS_OF_STATISTIC;
+
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		if (null != c && c.getColumnCount() == 2) {
 			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
 			return FillUp.getFillUp(mDBHelper, id);
-		}		
-		return null;		
+		}
+		return null;
 	}
-	
-	public float getLiter() {
+       
+		public float getLiter() {
 		final String[] args = new String[] {String.valueOf(mId)};		
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
@@ -119,7 +119,7 @@ public class Statistic implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
 			"FROM " + StatisticFillupColumns.FILLUPS_OF_STATISTIC;
 		
-		Cursor c = FueloidDBProxy.protectedRawQuery(mDBHelper, queryMinMaxDistance, args);
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		

@@ -18,8 +18,6 @@
 
 package biz.bruenn.fueloid.data;
 
-import java.util.Vector;
-
 import biz.bruenn.fueloid.data.FueloidDBProxy.DatabaseHelper;
 
 import android.content.ContentValues;
@@ -30,7 +28,7 @@ import android.provider.BaseColumns;
 public class StatisticFillupColumns implements BaseColumns {
 	public static final String TABLE_NAME = "ltsf";//"linktable_statistics_fillups";
 	public static final String SID = "sid"; //statistic id
-	public static final String FID = "fid"; //fill-up id
+	public static final String FID = "fid"; //fill-up id	
 	public static final String COLSID = TABLE_NAME + "." + SID;
 	public static final String COLFID = TABLE_NAME + "." + FID;
 	
@@ -42,25 +40,6 @@ public class StatisticFillupColumns implements BaseColumns {
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ SID +" INTEGER, "
 			+ FID +" INTEGER);";
-	
-	public static void cleanUpFillUps(DatabaseHelper openHelper) {
-		Vector<Integer> liveIds = new Vector<Integer>();
-		String sqlGetFillUpIds = "SELECT _id FROM fillups";
-		String sqlGetLivingFillUpIds = "SELECT DISTINC SID FROM ltsf";
-		Cursor allIds = FueloidDBProxy.protectedRawQuery(openHelper, sqlGetFillUpIds, null);
-		Cursor cursorLiveIds = FueloidDBProxy.protectedRawQuery(openHelper, sqlGetLivingFillUpIds, null);
-		
-		while(cursorLiveIds.moveToNext()) {
-			liveIds.add(cursorLiveIds.getInt(0));
-		}
-		
-		while(allIds.moveToNext()) {
-			Integer i = allIds.getInt(0);
-			if(!liveIds.contains(i)) {
-				FillUp.deleteFillUp(openHelper, i.intValue());
-			}
-		}
-	}
 
 	public static boolean delete(DatabaseHelper dh, Statistic s, FillUp f) {
 		SQLiteDatabase db = null;
@@ -92,7 +71,7 @@ public class StatisticFillupColumns implements BaseColumns {
 								FillUp.COLMONEY + 
 					" FROM " + FillUp.TABLE_NAME + ", " + TABLE_NAME +
 					" WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "=?"+
-					" ORDER BY " + FillUp.COLDISTANCE + " DESC", new String[] {String.valueOf(s.getmId())});
+					" ORDER BY " + FillUp.COLFILLDATE + " DESC", new String[] {String.valueOf(s.getmId())});
 				if(null != c) {
 					c.moveToFirst();
 				}

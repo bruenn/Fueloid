@@ -83,8 +83,9 @@ public class FillUpList extends ListActivity {
     	AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
     	switch (item.getItemId()) {
     	case R.id.delete:
-    		FillUp f = this.mDBProxy.getFillUp(info.id);
+    		FillUp f = FillUp.getFillUp(mDBProxy.mOpenHelper, info.id);
     		mStatistic.removeFillUp(f);
+    		FillUp.deleteFillUp(mDBProxy.mOpenHelper, f.getmId());
     		mFillUpAdapter.changeCursor(mStatistic.getFillUpsCursor());
     		updateText();
     		return true;
