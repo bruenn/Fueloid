@@ -14,8 +14,12 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int addFillup=0x7f06000d;
-        public static final int delete=0x7f06000e;
+        public static final int addFillup=0x7f060016;
+        public static final int decimalDec=0x7f060013;
+        public static final int decimalInc=0x7f060011;
+        public static final int decimalPart=0x7f060012;
+        public static final int delete=0x7f060017;
+        public static final int error=0x7f060009;
         public static final int fillupDate=0x7f060000;
         public static final int fillupDistance=0x7f060003;
         public static final int fillupDistanceDec=0x7f060004;
@@ -24,16 +28,22 @@ public final class R {
         public static final int fillupLiter=0x7f060007;
         public static final int fillupMoney=0x7f060008;
         public static final int fillupTime=0x7f060002;
-        public static final int icon=0x7f060009;
+        public static final int fullDec=0x7f060010;
+        public static final int fullInc=0x7f06000e;
+        public static final int fullPart=0x7f06000f;
+        public static final int icon=0x7f06000a;
+        public static final int layout_root=0x7f06000d;
+        public static final int ok=0x7f060014;
         public static final int space=0x7f060001;
-        public static final int statisticDistance=0x7f06000c;
-        public static final int text=0x7f06000b;
-        public static final int title=0x7f06000a;
+        public static final int statisticDistance=0x7f060015;
+        public static final int text=0x7f06000c;
+        public static final int title=0x7f06000b;
     }
     public static final class layout {
         public static final int edit_fillup=0x7f030000;
         public static final int fillup_row=0x7f030001;
-        public static final int main=0x7f030002;
+        public static final int float_picker_dialog=0x7f030002;
+        public static final int main=0x7f030003;
     }
     public static final class menu {
         public static final int menu_fillup=0x7f050000;

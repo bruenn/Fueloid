@@ -18,6 +18,7 @@
 
 package biz.bruenn.fueloid;
 
+import biz.bruenn.fueloid.FloatPickerDialog.OnFloatSetListener;
 import biz.bruenn.fueloid.data.FillUp;
 import biz.bruenn.fueloid.data.FueloidDBProxy;
 import android.app.Activity;
@@ -39,9 +40,11 @@ import android.widget.TimePicker;
 public class EditFillUp extends Activity {
 	protected static final int DATE_PICKER_DIALOG = 0;
 	protected static final int TIME_PICKER_DIALOG = 1;
+	protected static final int FLOAT_PICKER_DIALOG = 2;
 	private FueloidDBProxy mDBProxy;
 	private FillUp mFillUp;
 	private TextView mDate;
+	private TextView mError;
 	private TextView mTime;
 	private EditText mDistance;
 	private EditText mLiter;
@@ -91,14 +94,19 @@ public class EditFillUp extends Activity {
         	mDistanceInc.setOnClickListener(mOnClickListener);
         }
         
+        mError = (TextView)findViewById(R.id.error);
+        
         mLiter = (EditText)findViewById(R.id.fillupLiter);
         if(null != mLiter) {
         	mLiter.addTextChangedListener(mLiterChangedListener);
+        	mLiter.setSelectAllOnFocus(true);
         }
         
         mMoney = (EditText)findViewById(R.id.fillupMoney);
         if(null != mMoney) {
         	mMoney.addTextChangedListener(mMoneyChangedListener);
+        	mMoney.setSelectAllOnFocus(true);
+        	mMoney.setOnClickListener(mOnClickListener);
         }
         
         mTime = (TextView)findViewById(R.id.fillupTime);
@@ -114,6 +122,8 @@ public class EditFillUp extends Activity {
     		return new DatePickerDialog(this, mDateSetListener, mFillUp.getDateYear(), mFillUp.getDateMonth()-1, mFillUp.getDateDay());
     	case TIME_PICKER_DIALOG:
     		return new TimePickerDialog(this, mTimeSetListener, mFillUp.getDateHours(), mFillUp.getDateMinutes(), true);
+    	case FLOAT_PICKER_DIALOG:
+    		return new FloatPickerDialog(this, mFillUp.getmMoney(), mMoneySetListener);
     	}
     	return null;
     }
@@ -165,13 +175,18 @@ public class EditFillUp extends Activity {
 				showDialog(TIME_PICKER_DIALOG);
 				break;
 			case R.id.fillupDistanceDec:
-				final int oldDistance = mFillUp.getmDistance();
-				if(oldDistance > 0) {
-					mFillUp.setmDistance(oldDistance - 1);
-				}
+
+				showDialog(FLOAT_PICKER_DIALOG);
+//				final int oldDistance = mFillUp.getmDistance();
+//				if(oldDistance > 0) {
+//					mFillUp.setmDistance(oldDistance - 1);
+//				}
 				break;
 			case R.id.fillupDistanceInc:
 				mFillUp.setmDistance(mFillUp.getmDistance() + 1);
+				break;
+			case R.id.fillupMoney:
+				showDialog(FLOAT_PICKER_DIALOG);
 				break;
 			}
 			updateText();
@@ -293,6 +308,15 @@ public class EditFillUp extends Activity {
 		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 			mFillUp.setTime(hourOfDay, minute);
 			updateText();			
+		}
+	};
+	
+	private FloatPickerDialog.OnFloatSetListener mMoneySetListener = new FloatPickerDialog.OnFloatSetListener() {
+		
+		@Override
+		public void onFloatSet(float value) {
+			mFillUp.setmMoney(value);
+			updateText();
 		}
 	};
 }
