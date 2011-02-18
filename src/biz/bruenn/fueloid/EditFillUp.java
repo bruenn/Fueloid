@@ -18,7 +18,6 @@
 
 package biz.bruenn.fueloid;
 
-import biz.bruenn.fueloid.FloatPickerDialog.OnFloatSetListener;
 import biz.bruenn.fueloid.data.FillUp;
 import biz.bruenn.fueloid.data.FueloidDBProxy;
 import android.app.Activity;
@@ -27,31 +26,24 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 public class EditFillUp extends Activity {
 	protected static final int DATE_PICKER_DIALOG = 0;
-	protected static final int TIME_PICKER_DIALOG = 1;
-	protected static final int FLOAT_PICKER_DIALOG = 2;
+	protected static final int DISTANCE_PICKER_DIALOG = 1;
+	protected static final int LITER_PICKER_DIALOG = 2;
+	protected static final int MONEY_PICKER_DIALOG = 3;
+	protected static final int TIME_PICKER_DIALOG = 4;
 	private FueloidDBProxy mDBProxy;
 	private FillUp mFillUp;
 	private TextView mDate;
-	private TextView mError;
+	private TextView mDistance;
+	private TextView mLiter;
+	private TextView mMoney;
 	private TextView mTime;
-	private EditText mDistance;
-	private EditText mLiter;
-	private EditText mMoney;
-	private Button mDistanceDec;
-	private Button mDistanceInc;
-	private SeekBar mDistanceSeeker;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,37 +67,18 @@ public class EditFillUp extends Activity {
         	mDate.setOnClickListener(mOnClickListener);	
         }
         
-        mDistance = (EditText)findViewById(R.id.fillupDistance);
+        mDistance = (TextView)findViewById(R.id.fillupDistance);
         if(null != mDistance) {
-        	mDistance.addTextChangedListener(mDistanceChangedListener);
-        }
-        mDistanceSeeker = (SeekBar)findViewById(R.id.fillupDistanceSeeker);
-        if(null != mDistanceSeeker) {
-        	mDistanceSeeker.setOnSeekBarChangeListener(mSeekBarChangeListener);
+        	mDistance.setOnClickListener(mOnClickListener);
         }
         
-        mDistanceDec = (Button)findViewById(R.id.fillupDistanceDec);
-        if(null != mDistanceDec) {
-        	mDistanceDec.setOnClickListener(mOnClickListener);
-        }
-        
-        mDistanceInc = (Button)findViewById(R.id.fillupDistanceInc);
-        if(null != mDistanceInc) {
-        	mDistanceInc.setOnClickListener(mOnClickListener);
-        }
-        
-        mError = (TextView)findViewById(R.id.error);
-        
-        mLiter = (EditText)findViewById(R.id.fillupLiter);
+        mLiter = (TextView)findViewById(R.id.fillupLiter);
         if(null != mLiter) {
-        	mLiter.addTextChangedListener(mLiterChangedListener);
-        	mLiter.setSelectAllOnFocus(true);
+        	mLiter.setOnClickListener(mOnClickListener);
         }
         
-        mMoney = (EditText)findViewById(R.id.fillupMoney);
+        mMoney = (TextView)findViewById(R.id.fillupMoney);
         if(null != mMoney) {
-        	mMoney.addTextChangedListener(mMoneyChangedListener);
-        	mMoney.setSelectAllOnFocus(true);
         	mMoney.setOnClickListener(mOnClickListener);
         }
         
@@ -116,52 +89,53 @@ public class EditFillUp extends Activity {
     }
     
     @Override
-    protected Dialog onCreateDialog(int id) {
+    protected Dialog onCreateDialog(int id, Bundle args) {
     	switch(id) {
     	case DATE_PICKER_DIALOG:
     		return new DatePickerDialog(this, mDateSetListener, mFillUp.getDateYear(), mFillUp.getDateMonth()-1, mFillUp.getDateDay());
+    	case DISTANCE_PICKER_DIALOG:
+    		return new IntPickerDialog(this, mDistanceSetListener, mFillUp.getmDistance());
+    	case LITER_PICKER_DIALOG:
+    		return new FloatPickerDialog(this, mLiterSetListener, mFillUp.getmLiter());
+    	case MONEY_PICKER_DIALOG:
+       		return new FloatPickerDialog(this, mMoneySetListener, mFillUp.getmMoney());
     	case TIME_PICKER_DIALOG:
     		return new TimePickerDialog(this, mTimeSetListener, mFillUp.getDateHours(), mFillUp.getDateMinutes(), true);
-    	case FLOAT_PICKER_DIALOG:
-    		return new FloatPickerDialog(this, mFillUp.getmMoney(), mMoneySetListener);
     	}
     	return null;
     }
     
     @Override
-    public void onPause() {
+    protected void onPause() {
     	super.onPause();
     	mDBProxy.updateFillUp(mFillUp);
     }
     
     @Override
+    protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
+    	super.onPrepareDialog(id, dialog, args);
+    	
+    	if(null != dialog) {
+    		switch(id) {
+	    	case DATE_PICKER_DIALOG:
+	    		((DatePickerDialog)dialog).onDateChanged(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
+	    		break;
+	    	case DISTANCE_PICKER_DIALOG:
+	    		((IntPickerDialog)dialog).update(mFillUp.getmDistance(), mFillUp.getPreviousDistance(), mFillUp.getNextDistance());
+	    		break;
+	    	}
+    	}
+    }    
+    
+    @Override
     public void onResume() {
     	super.onResume();
-    	updateText();
+    	mDateSetListener.onDateSet(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
+    	mDistanceSetListener.onIntSet(mFillUp.getmDistance());
+    	mTimeSetListener.onTimeSet(null, mFillUp.getDateHours(), mFillUp.getDateMinutes());
+    	mLiterSetListener.onFloatSet(mFillUp.getmLiter());
+    	mMoneySetListener.onFloatSet(mFillUp.getmMoney());
     }
-    
-    private void updateText() {
-    	if(null != mFillUp) {
-	    	mDate.setText(mFillUp.getDateYear() + "-" + mFillUp.getDateMonth() + "-" + mFillUp.getDateDay());
-	    	mDistance.setText(String.valueOf(mFillUp.getmDistance()));
-	    	mLiter.setText(String.valueOf(mFillUp.getmLiter()));
-	    	mMoney.setText(String.valueOf(mFillUp.getmMoney()));
-	    	mTime.setText(mFillUp.getDateHours() + ":" + mFillUp.getDateMinutes());
-	    	
-	    	updateDistance();
-    	}
-    }
-
-	private void updateDistance() {
-		int previousDistance = mFillUp.getPreviousDistance();
-		this.mDistanceSeeker.setMax(mFillUp.getNextDistance() - previousDistance);
-		if(mFillUp.getmDistance() < previousDistance) {
-			mFillUp.setmDistance(previousDistance);
-		}
-		this.mDistanceSeeker.setProgress(mFillUp.getmDistance() - previousDistance);
-		
-		mTime.setText(":" + mFillUp.getPreviousDistance() + "-" + mFillUp.getNextDistance());
-	}
     
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		
@@ -171,50 +145,18 @@ public class EditFillUp extends Activity {
 			case R.id.fillupDate:
 				showDialog(DATE_PICKER_DIALOG);
 				break;
+			case R.id.fillupDistance:
+				showDialog(DISTANCE_PICKER_DIALOG);
+				break;
+			case R.id.fillupLiter:
+				showDialog(LITER_PICKER_DIALOG);
+				break;
+			case R.id.fillupMoney:
+				showDialog(MONEY_PICKER_DIALOG);
+				break;
 			case R.id.fillupTime:
 				showDialog(TIME_PICKER_DIALOG);
 				break;
-			case R.id.fillupDistanceDec:
-
-				showDialog(FLOAT_PICKER_DIALOG);
-//				final int oldDistance = mFillUp.getmDistance();
-//				if(oldDistance > 0) {
-//					mFillUp.setmDistance(oldDistance - 1);
-//				}
-				break;
-			case R.id.fillupDistanceInc:
-				mFillUp.setmDistance(mFillUp.getmDistance() + 1);
-				break;
-			case R.id.fillupMoney:
-				showDialog(FLOAT_PICKER_DIALOG);
-				break;
-			}
-			updateText();
-		}
-	};
-
-	private SeekBar.OnSeekBarChangeListener mSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-		
-		private int mOldDistance;
-		
-		@Override
-		public void onStopTrackingTouch(SeekBar seekBar) {
-			updateDistance();
-		}
-		
-		@Override
-		public void onStartTrackingTouch(SeekBar seekBar) {
-			updateDistance();
-			mOldDistance = mFillUp.getmDistance() - seekBar.getProgress();
-		}
-		
-		@Override
-		public void onProgressChanged(SeekBar seekBar, int progress,
-				boolean fromUser) {
-			if(fromUser) {
-				mFillUp.setmDistance(mOldDistance+progress);
-				mDistance.setText(String.valueOf(mFillUp.getmDistance()));
-				//updateDistance();
 			}
 		}
 	};
@@ -225,89 +167,25 @@ public class EditFillUp extends Activity {
 		public void onDateSet(DatePicker view, int year, int monthOfYear,
 				int dayOfMonth) {
 			mFillUp.setDate(year - 1900, monthOfYear, dayOfMonth);
-			updateText();
+			mDate.setText(mFillUp.getDateYear() + "-" + mFillUp.getDateMonth() + "-" + mFillUp.getDateDay());
 		}
 	};
 	
-	private TextWatcher mDistanceChangedListener = new TextWatcher() {
-
-		@Override
-		public void afterTextChanged(Editable s) {
-			if(s.length() > 0) {
-				mFillUp.setmDistance(Integer.parseInt(s.toString()));
-			} else {
-				mFillUp.setmDistance(0);
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-			// we don't need this
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			// we don't need this
-		}
-		
-	};
-	
-	private TextWatcher mLiterChangedListener = new TextWatcher() {
-
-		@Override
-		public void afterTextChanged(Editable s) {
-			if(s.length() > 0) {
-				mFillUp.setmLiter(Float.parseFloat(s.toString()));
-			} else {
-				mFillUp.setmLiter(0f);
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-			// we don't need this			
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			// we don't need this	
-		}
-	};
-	
-	private TextWatcher mMoneyChangedListener = new TextWatcher() {
-
-		@Override
-		public void afterTextChanged(Editable s) {
-			if(s.length() > 0) {
-				mFillUp.setmMoney(Float.parseFloat(s.toString()));
-			} else {
-				mFillUp.setmMoney(0f);
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-			// we don't need this			
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			// we don't need this	
-		}
-	};
-	
-	private TimePickerDialog.OnTimeSetListener mTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+	private IntPickerDialog.OnIntSetListener mDistanceSetListener = new IntPickerDialog.OnIntSetListener() {
 		
 		@Override
-		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-			mFillUp.setTime(hourOfDay, minute);
-			updateText();			
+		public void onIntSet(int value) {
+			mFillUp.setmDistance(value);
+			mDistance.setText(value + " km");
+		}
+	};
+	
+	private FloatPickerDialog.OnFloatSetListener mLiterSetListener = new FloatPickerDialog.OnFloatSetListener() {
+		
+		@Override
+		public void onFloatSet(float value) {
+			mFillUp.setmLiter(value);
+			mLiter.setText(value + " l");
 		}
 	};
 	
@@ -316,7 +194,21 @@ public class EditFillUp extends Activity {
 		@Override
 		public void onFloatSet(float value) {
 			mFillUp.setmMoney(value);
-			updateText();
+			mMoney.setText(value + " €");
+		}
+	};
+	
+	private TimePickerDialog.OnTimeSetListener mTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+		
+		@Override
+		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+			mFillUp.setTime(hourOfDay, minute);
+			
+			if(minute < 10) {
+				mTime.setText(hourOfDay + ":0" + minute);
+			} else {
+				mTime.setText(hourOfDay + ":" + minute);
+			}
 		}
 	};
 }

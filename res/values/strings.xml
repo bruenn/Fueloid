@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">WTF!-9</string>
     <string name="app_name">Fueloid</string>
+    <string name="large_text_size">48sp</string>
 </resources>

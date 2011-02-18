@@ -49,7 +49,7 @@ public class FillUp implements BaseColumns {
 			+ LITER +" REAL, "
 			+ MONEY + " REAL);";
 	
-	private static final int MAX_DISTANCE = 200;
+	private static final int MAX_DISTANCE = 300000; // TODO 
 	
 	private FueloidDBProxy.DatabaseHelper mDBHelper;
 	private long mId;
@@ -131,7 +131,7 @@ public class FillUp implements BaseColumns {
 		if(null != c && c.moveToFirst()) {
 			return c.getInt(0);
 		}		
-		return mDistance + MAX_DISTANCE;
+		return MAX_DISTANCE;
 	}
 	
 	/**
