@@ -1,0 +1,50 @@
+listing of open issues
+
+
+New features:
+================================================================
+-design icons
+--overall distance
+--overall money
+--overall liter
+--average liter/distance
+--average money/liter
+ 
+-statistics
+--last month
+--last X fillups
+--last X days
+--tour (from DATE to DATE)
+
+-vehicles
+--add support for multiple vehicles
+
+-website
+--create fueloid.bruenn.biz
+--source code download
+--repository?
+
+-social network support
+--facebook app vs. own website
+--device upload
+
+Bugs:
+================================================================
+-reimplement NumberPicker
+--allow overflow 9+1 = 0
+--add callback valueChanged
+
+
+-EditFillUp
+--use icons for settings
+
+
+-DistancePicker
+--implement min/max values
+--add title
+
+
+-FloatPicker
+--reimplement as liter picker
+--reimplement as money picker
+
