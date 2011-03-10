@@ -19,6 +19,8 @@
 package biz.bruenn.fueloid.data;
 
 import java.util.Date;
+import java.util.GregorianCalendar;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -40,6 +42,7 @@ public class FillUp implements BaseColumns {
 	public static final String COLFILLDATE = TABLE_NAME + "." + FILLDATE;
 	public static final String COLLITER = TABLE_NAME + "." + LITER;
 	public static final String COLMONEY = TABLE_NAME + "." + MONEY;
+	public static final int MAX_DISTANCE = 3000000;
 	
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
@@ -49,17 +52,15 @@ public class FillUp implements BaseColumns {
 			+ LITER +" REAL, "
 			+ MONEY + " REAL);";
 	
-	private static final int MAX_DISTANCE = 300000; // TODO 
-	
 	private FueloidDBProxy.DatabaseHelper mDBHelper;
 	private long mId;
 	private int mDistance;
-	private Date mFillDate;
+	private GregorianCalendar mFillDate = new GregorianCalendar();
 	private float mLiter;
 	private float mMoney;
 	
 	/**
-	 * new object is created from database
+	 * Constructor for objects created from database
 	 * @param id
 	 * @param distance
 	 * @param date
@@ -70,7 +71,7 @@ public class FillUp implements BaseColumns {
 		mDBHelper = new FueloidDBProxy.DatabaseHelper(context);
 		mId = id;
 		mDistance = distance;
-		mFillDate = date;
+		mFillDate.setTime(date);
 		mLiter = liter;
 		mMoney = money;
 	}
@@ -83,28 +84,28 @@ public class FillUp implements BaseColumns {
 		return mId;
 	}
 	
-	public final Date getmDate() {
-		return mFillDate;
+	public final long getTimeInMillis() {
+		return mFillDate.getTimeInMillis();
 	}
 	
 	public final int getDateDay() {
-		return mFillDate.getDate();
+		return mFillDate.get(GregorianCalendar.DAY_OF_MONTH);
 	}
 	
 	public final int getDateHours() {
-		return mFillDate.getHours();
+		return mFillDate.get(GregorianCalendar.HOUR_OF_DAY);
 	}
 	
 	public final int getDateMinutes() {
-		return mFillDate.getMinutes();
+		return mFillDate.get(GregorianCalendar.MINUTE);
 	}
 	
 	public final int getDateMonth() {
-		return mFillDate.getMonth() + 1;
+		return mFillDate.get(GregorianCalendar.MONTH);
 	}
 	
 	public final int getDateYear() {
-		return mFillDate.getYear() + 1900;
+		return mFillDate.get(GregorianCalendar.YEAR);
 	}
 
 	public final int getmDistance() {
@@ -123,7 +124,7 @@ public class FillUp implements BaseColumns {
 	 * @return the previous distance
 	 */
 	public int getNextDistance() {
-		final String[] args = new String[] {String.valueOf(mFillDate.getTime())};		
+		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
 		// TODO refactor query use SQLiteQueryBuilder
 		final String queryNextDistance = "SELECT " + DISTANCE +
 			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MIN(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"> ?)";
@@ -138,7 +139,7 @@ public class FillUp implements BaseColumns {
 	 * @return the previous distance
 	 */
 	public int getPreviousDistance() {
-		final String[] args = new String[] {String.valueOf(mFillDate.getTime())};		
+		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
 		// TODO refactor query use SQLiteQueryBuilder
 		final String queryPreviousDistance = "SELECT " + DISTANCE +
 			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MAX(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"< ?)";
@@ -148,24 +149,14 @@ public class FillUp implements BaseColumns {
 		}		
 		return 0;
 	}
-
-	/**
-	 * 
-	 * @param newVal
-	 */
-	public void setmDate(Date newVal) {
-		mFillDate = newVal;
-	}
 	
 	public void setDate(int year, int month, int day) {
-		mFillDate.setYear(year);
-		mFillDate.setMonth(month);
-		mFillDate.setDate(day);
+		mFillDate.set(year, month, day);
 	}
 	
 	public void setTime(int hours, int minutes) {
-		mFillDate.setHours(hours);
-		mFillDate.setMinutes(minutes);
+		mFillDate.set(GregorianCalendar.HOUR_OF_DAY, hours);
+		mFillDate.set(GregorianCalendar.MINUTE, minutes);
 	}
 
 	/**

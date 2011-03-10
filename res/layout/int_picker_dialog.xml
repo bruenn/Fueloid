@@ -9,9 +9,10 @@
  		android:layout_height="wrap_content" >
 	 	<SeekBar
 	 		android:id="@+id/intSeeker"
-	    	android:layout_width="300dp"
+	    	android:layout_width="190dp"
 	    	android:layout_height="wrap_content"
-	    	android:max="100"
+	    	android:max="1000"
+	    	android:orientation="horizontal"
 	    	android:progress="0"	
 	 	/>
 	</LinearLayout>

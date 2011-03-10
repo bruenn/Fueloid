@@ -72,6 +72,7 @@ public class FloatPickerDialog extends Dialog {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.float_picker_dialog);
 		mOK = (Button)findViewById(R.id.ok);
 		mOK.setOnClickListener(mOnClickListener);

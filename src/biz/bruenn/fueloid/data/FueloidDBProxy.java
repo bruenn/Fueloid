@@ -35,9 +35,8 @@ public class FueloidDBProxy {
 
     private static final String TAG = "FueloidDBAdapter";
 
-    private static final String DATABASE_NAME = "fueloid3.db";
-    private static final int DATABASE_VERSION = 14;
-    //public static final String FILLUPS_TABLE_NAME = "fillups";
+    private static final String DATABASE_NAME = "fueloid.db";
+    private static final int DATABASE_VERSION = 17;
 
     public DatabaseHelper mOpenHelper;
     
@@ -82,7 +81,7 @@ public class FueloidDBProxy {
     		db = mOpenHelper.getWritableDatabase();
     		ContentValues values = new ContentValues();
     		values.put(FillUp.DISTANCE, f.getmDistance());
-    		values.put(FillUp.FILLDATE, f.getmDate().getTime());
+    		values.put(FillUp.FILLDATE, f.getTimeInMillis());
     		values.put(FillUp.LITER, f.getmLiter());
     		values.put(FillUp.MONEY, f.getmMoney());
     		db.update(FillUp.TABLE_NAME, values, FillUp._ID + "=" + f.getmId(), null);

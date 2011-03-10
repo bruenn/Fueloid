@@ -99,7 +99,7 @@ public class NumberPicker extends LinearLayout {
 		super(context, attributeSet);
 		
 		this.setLayoutParams( new LinearLayout.LayoutParams( LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT ) );
-		LayoutParams elementParams = new LinearLayout.LayoutParams( ELEMENT_HEIGHT, ELEMENT_WIDTH );
+		LayoutParams elementParams = new LinearLayout.LayoutParams(attributeSet.getAttributeIntValue(null, "custom_width", ELEMENT_WIDTH), ELEMENT_HEIGHT);
 		
 		// init the individual elements
 		initDecrementButton( context );
