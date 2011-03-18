@@ -21,16 +21,13 @@ package biz.bruenn.fueloid.data;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import android.content.Context;
+
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.provider.BaseColumns;
 
-/**
- * @author adbrpa2
- * @version 1.0
- * @created 17-Jan-2011 10:23:13
- */
 public class FillUp implements BaseColumns {
 	public static final String TABLE_NAME = "fillups";
 	public static final String DISTANCE = "distance";
@@ -42,7 +39,7 @@ public class FillUp implements BaseColumns {
 	public static final String COLFILLDATE = TABLE_NAME + "." + FILLDATE;
 	public static final String COLLITER = TABLE_NAME + "." + LITER;
 	public static final String COLMONEY = TABLE_NAME + "." + MONEY;
-	public static final int MAX_DISTANCE = 3000000;
+	public static final int MAX_DISTANCE = 3000000;// TODO
 	
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
@@ -52,7 +49,7 @@ public class FillUp implements BaseColumns {
 			+ LITER +" REAL, "
 			+ MONEY + " REAL);";
 	
-	private FueloidDBProxy.DatabaseHelper mDBHelper;
+	private FueloidDatabaseHelper mDBHelper;
 	private long mId;
 	private int mDistance;
 	private GregorianCalendar mFillDate = new GregorianCalendar();
@@ -67,8 +64,8 @@ public class FillUp implements BaseColumns {
 	 * @param liter
 	 * @param money
 	 */
-	public FillUp(Context context, long id, int distance, Date date, float liter, float money) {
-		mDBHelper = new FueloidDBProxy.DatabaseHelper(context);
+	private FillUp(FueloidDatabaseHelper openHelper, long id, int distance, Date date, float liter, float money) {
+		mDBHelper = openHelper;
 		mId = id;
 		mDistance = distance;
 		mFillDate.setTime(date);
@@ -85,27 +82,70 @@ public class FillUp implements BaseColumns {
 	}
 	
 	public final long getTimeInMillis() {
-		return mFillDate.getTimeInMillis();
+		try {
+			return mFillDate.getTimeInMillis();
+		} catch (IllegalArgumentException e) {
+			return 0;
+		}
 	}
 	
 	public final int getDateDay() {
-		return mFillDate.get(GregorianCalendar.DAY_OF_MONTH);
+		try {
+			return mFillDate.get(GregorianCalendar.DAY_OF_MONTH);
+		} catch (IllegalArgumentException e) {
+			return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 	
 	public final int getDateHours() {
-		return mFillDate.get(GregorianCalendar.HOUR_OF_DAY);
+		try {
+			return mFillDate.get(GregorianCalendar.HOUR_OF_DAY);
+		} catch (IllegalArgumentException e) {
+			return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 	
 	public final int getDateMinutes() {
-		return mFillDate.get(GregorianCalendar.MINUTE);
+		try {
+			return mFillDate.get(GregorianCalendar.MINUTE);
+		} catch (IllegalArgumentException e) {
+			return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 	
+	/**
+	 * Get the month index of the FillUp date
+	 * Example date: 2011-01-31
+	 * @return 0 for January
+	 */
 	public final int getDateMonth() {
-		return mFillDate.get(GregorianCalendar.MONTH);
+		try {
+			return mFillDate.get(GregorianCalendar.MONTH);
+		} catch (IllegalArgumentException e) {
+			return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 	
+	/**
+	 * 
+	 * @return year of the FillUp (f.e. 2011)
+	 */
 	public final int getDateYear() {
-		return mFillDate.get(GregorianCalendar.YEAR);
+		try {
+			return mFillDate.get(GregorianCalendar.YEAR);
+		} catch (IllegalArgumentException e) {
+			return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 
 	public final int getmDistance() {
@@ -121,7 +161,7 @@ public class FillUp implements BaseColumns {
 	}
 	
 	/**
-	 * @return the previous distance
+	 * @return distance of the next FillUp in time
 	 */
 	public int getNextDistance() {
 		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
@@ -136,7 +176,7 @@ public class FillUp implements BaseColumns {
 	}
 	
 	/**
-	 * @return the previous distance
+	 * @return distance of the previous FillUp in time
 	 */
 	public int getPreviousDistance() {
 		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
@@ -150,17 +190,28 @@ public class FillUp implements BaseColumns {
 		return 0;
 	}
 	
+	/**
+	 * Set year, month and day of date to new values, database is NOT updated!
+	 * @param year
+	 * @param month
+	 * @param day
+	 */
 	public void setDate(int year, int month, int day) {
 		mFillDate.set(year, month, day);
 	}
 	
+	/**
+	 * Set hours and minutes of date to new values, database is NOT updated!
+	 * @param hours
+	 * @param minutes
+	 */
 	public void setTime(int hours, int minutes) {
 		mFillDate.set(GregorianCalendar.HOUR_OF_DAY, hours);
 		mFillDate.set(GregorianCalendar.MINUTE, minutes);
 	}
 
 	/**
-	 * 
+	 * Set distance to new value, database is NOT updated!
 	 * @param newVal
 	 */
 	public void setmDistance(int newVal) {
@@ -168,7 +219,7 @@ public class FillUp implements BaseColumns {
 	}
 
 	/**
-	 * 
+	 * Set liter to new value, database is NOT updated!
 	 * @param newVal
 	 */
 	public void setmLiter(float newVal) {
@@ -176,20 +227,76 @@ public class FillUp implements BaseColumns {
 	}
 
 	/**
-	 * 
+	 * Set money to new value, database is NOT updated!
 	 * @param newVal
 	 */
 	public void setmMoney(float newVal) {
 		mMoney = newVal;
 	}
 	
-
-    
-    public static void deleteFillUp(FueloidDBProxy.DatabaseHelper openHelper, long id) {
+	/**
+	 * Update database
+	 * Write changed values to database
+	 */
+    public void update() {
+    	SQLiteDatabase db = null;
+    	try {
+    		db = mDBHelper.getWritableDatabase();
+    		ContentValues values = new ContentValues();
+    		values.put(FillUp.DISTANCE, getmDistance());
+    		values.put(FillUp.FILLDATE, getTimeInMillis());
+    		values.put(FillUp.LITER, getmLiter());
+    		values.put(FillUp.MONEY, getmMoney());
+    		db.update(FillUp.TABLE_NAME, values, FillUp._ID + "=" + getmId(), null);
+    	} catch (Exception e) {
+    		
+    	} finally {
+    		if(null != db) {
+    			db.close();
+    		}
+    	}
+    }
+	
+    /**
+     * Create a new FillUp object in database
+     * @param openHelper database helper
+     * @param distance initial value
+     * @param date initial value
+     * @param liter initial value
+     * @param money initial value
+     * @return newly created FillUp object representation or null if creation fails
+     */
+    public static FillUp create(FueloidDatabaseHelper openHelper, int distance, Date date, float liter, float money) {
     	SQLiteDatabase db = null;
     	try {
     		db = openHelper.getWritableDatabase();
-    		db.delete(FillUp.TABLE_NAME, FillUp._ID + "=" + id, null);
+    		ContentValues values = new ContentValues();
+    		values.put(FillUp.DISTANCE, distance);
+    		values.put(FillUp.FILLDATE, date.getTime());
+    		values.put(FillUp.LITER, liter);
+    		values.put(FillUp.MONEY, money);
+    		long id = db.insert(FillUp.TABLE_NAME, null, values);
+    		if(-1 != id) {
+    			return new FillUp(openHelper, id, distance, date, liter, money);
+    		}
+    		return null;
+    	} catch (SQLiteException e) {
+    		return null;    		
+    	} finally {
+    		if(null != db) {
+    			db.close();	
+    		}
+    	}
+    }
+    
+    /**
+     * Delete FillUp object from database
+     */
+    public void delete() {
+    	SQLiteDatabase db = null;
+    	try {
+    		db = this.mDBHelper.getWritableDatabase();
+    		db.delete(FillUp.TABLE_NAME, FillUp._ID + "=" + mId, null);
     	} catch (Exception e) {
     		
     	} finally {
@@ -204,19 +311,18 @@ public class FillUp implements BaseColumns {
      * @param id
      * @return FillUp object from database or null if <id> was not found
      */
-    public static FillUp getFillUp(FueloidDBProxy.DatabaseHelper openHelper, long id) {
+    public static FillUp getFillUp(FueloidDatabaseHelper openHelper, long id) {
     	SQLiteDatabase db = null;
     	try {
     		db = openHelper.getReadableDatabase();
     		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
     		if(null != c && c.moveToFirst())
     		{
-        		return FillUp.getFillUp(openHelper.mContext, c);
+        		return FillUp.getFillUp(openHelper, c);
     		}
     		return null;
     	} catch (Exception e) {
     		return null;
-    		
     	} finally {
     		if(null != db) {
     			db.close();
@@ -225,12 +331,12 @@ public class FillUp implements BaseColumns {
     }
     
     /**
-     * Builds an fill-up object from a database cursor
+     * Creates a fill-up object from a database cursor
      * @param context current context
      * @param cursor cursor to a database fill-up column
      * @return fill-up object representation or null if cursor was flawed
      */
-	public static FillUp getFillUp(Context context, Cursor cursor) {	
+	private static FillUp getFillUp(FueloidDatabaseHelper openHelper, Cursor cursor) {	
 		if((null != cursor) && (cursor.getColumnCount() == 5)) {
 			try {
 				int id = cursor.getInt(cursor.getColumnIndexOrThrow(_ID));
@@ -238,7 +344,7 @@ public class FillUp implements BaseColumns {
 				Date fillDate = new Date(cursor.getLong(cursor.getColumnIndexOrThrow(FILLDATE)));
 				float liter = cursor.getFloat(cursor.getColumnIndexOrThrow(LITER));
 				float money = cursor.getFloat(cursor.getColumnIndexOrThrow(MONEY));
-				return new FillUp(context, id, distance, fillDate, liter, money);
+				return new FillUp(openHelper, id, distance, fillDate, liter, money);
 			} catch (IllegalArgumentException e) {
 				return null;
 			} finally {

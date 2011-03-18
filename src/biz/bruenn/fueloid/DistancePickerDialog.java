@@ -104,7 +104,7 @@ public class DistancePickerDialog extends Dialog {
 		mPickers[mPickers.length - 1].setValue(value);		
 	}
 	
-	public void update(int value, int min, int max) {
+	public void onDistanceChanged(int value, int min, int max) {
 		setValue(value);		
 	}
 }

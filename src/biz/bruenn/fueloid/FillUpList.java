@@ -39,15 +39,15 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 import biz.bruenn.fueloid.EditFillUp;
+import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
-import biz.bruenn.fueloid.data.FueloidDBProxy;
-import biz.bruenn.fueloid.data.Statistic;
-import biz.bruenn.fueloid.data.StatisticFillupColumns;
+import biz.bruenn.fueloid.data.Vehicle;
+import biz.bruenn.fueloid.data.VehicleFillupColumns;
 
 public class FillUpList extends ListActivity {
-	FueloidDBProxy mDBProxy;
+	FueloidDatabaseHelper mDBHelper;
 	FillUpAdapter mFillUpAdapter;
-	Statistic mStatistic;
+	Vehicle mVehicle;
 	
     /** Called when the activity is first created. */
     @Override
@@ -56,14 +56,14 @@ public class FillUpList extends ListActivity {
         setContentView(R.layout.main);
         
          
-        mDBProxy = new FueloidDBProxy(this);
-        mStatistic = new Statistic(this);
+        mDBHelper = new FueloidDatabaseHelper(this);
+        mVehicle = new Vehicle(this);
         
         TextView addButton = (TextView)findViewById(R.id.addFillup);
         addButton.setOnClickListener(mOnClickListener);
         
         
-	    mFillUpAdapter = new FillUpAdapter(this, StatisticFillupColumns.getFillUpsForStatistic(mDBProxy.mOpenHelper, mStatistic));
+	    mFillUpAdapter = new FillUpAdapter(this, VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
 	    
 
 	    this.setListAdapter(mFillUpAdapter);
@@ -83,10 +83,10 @@ public class FillUpList extends ListActivity {
     	AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
     	switch (item.getItemId()) {
     	case R.id.delete:
-    		FillUp f = FillUp.getFillUp(mDBProxy.mOpenHelper, info.id);
-    		mStatistic.removeFillUp(f);
-    		FillUp.deleteFillUp(mDBProxy.mOpenHelper, f.getmId());
-    		mFillUpAdapter.changeCursor(mStatistic.getFillUpsCursor());
+    		FillUp f = FillUp.getFillUp(mDBHelper, info.id);
+    		mVehicle.removeFillUp(f);
+    		f.delete();
+    		mFillUpAdapter.changeCursor(mVehicle.getFillUpsCursor());
     		updateText();
     		return true;
     	default:
@@ -102,13 +102,13 @@ public class FillUpList extends ListActivity {
     
     private void updateText() {
     	//reread fillup list from database, by updating the list adapters cursor
-    	((FillUpAdapter)this.getListAdapter()).changeCursor(StatisticFillupColumns.getFillUpsForStatistic(mDBProxy.mOpenHelper, mStatistic));
-    	TextView mDistance = (TextView)this.findViewById(R.id.statisticDistance);
-    	mDistance.setText(mStatistic.getDistance() + "km|"
-    					+ mStatistic.getMoney() + "€|"
-    					+ mStatistic.getLiter() + "l|"
-    					+ mStatistic.getLiterPerDistance() + "l/km|"
-    					+ mStatistic.getMoneyPerLiter() + "€/l");
+    	((FillUpAdapter)this.getListAdapter()).changeCursor(VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
+    	TextView mDistance = (TextView)this.findViewById(R.id.vehicleDistance);
+    	mDistance.setText(mVehicle.getDistance() + "km|"
+    					+ mVehicle.getMoney() + "€|"
+    					+ mVehicle.getLiter() + "l|"
+    					+ mVehicle.getLiterPerDistance() + "l/km|"
+    					+ mVehicle.getMoneyPerLiter() + "€/l");
 	}
 
 	private class FillUpAdapter extends CursorAdapter {
@@ -140,14 +140,14 @@ public class FillUpList extends ListActivity {
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
     	@Override
 		public void onClick(View v) {
-    	FillUp lastFillUp = mStatistic.getLastFillUp();
+    	FillUp lastFillUp = mVehicle.getLastFillUp();
     	FillUp newFillUp = null;
     	if(null != lastFillUp) {
-    		newFillUp = mDBProxy.insertFillUp(lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
+    		newFillUp = FillUp.create(mDBHelper, lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
     	} else {
-    		newFillUp = mDBProxy.insertFillUp(0, new Date(), 0f, 0f);
+    		newFillUp = FillUp.create(mDBHelper, 0, new Date(), 0f, 0f);
     	}
-		mStatistic.addFillUp(newFillUp);
+		mVehicle.addFillUp(newFillUp);
 		Intent i = new Intent(v.getContext(), EditFillUp.class);
 		i.putExtra(FillUp.TABLE_NAME, newFillUp.getmId());
 		startActivityForResult(i, 0);

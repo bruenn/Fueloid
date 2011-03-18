@@ -19,8 +19,8 @@
 package biz.bruenn.fueloid;
 
 import biz.bruenn.fueloid.DistancePickerDialog.OnDistanceSetListener;
+import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
-import biz.bruenn.fueloid.data.FueloidDBProxy;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -38,7 +38,7 @@ public class EditFillUp extends Activity {
 	protected static final int LITER_PICKER_DIALOG = 2;
 	protected static final int MONEY_PICKER_DIALOG = 3;
 	protected static final int TIME_PICKER_DIALOG = 4;
-	private FueloidDBProxy mDBProxy;
+	private FueloidDatabaseHelper mDBHelper;
 	private FillUp mFillUp;
 	private TextView mDate;
 	private TextView mDistance;
@@ -50,11 +50,11 @@ public class EditFillUp extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDBProxy = new FueloidDBProxy(this);
+        mDBHelper = new FueloidDatabaseHelper(this);
         
         Intent i = getIntent();
         
-        mFillUp = FillUp.getFillUp(mDBProxy.mOpenHelper, i.getLongExtra(FillUp.TABLE_NAME, 0));
+        mFillUp = FillUp.getFillUp(mDBHelper, i.getLongExtra(FillUp.TABLE_NAME, 0));
         if(null == mFillUp) {
         	TextView tv = new TextView(this);
         	tv.setText("Error when reading database");
@@ -109,7 +109,7 @@ public class EditFillUp extends Activity {
     @Override
     protected void onPause() {
     	super.onPause();
-    	mDBProxy.updateFillUp(mFillUp);
+    	mFillUp.update();
     }
     
     @Override
@@ -122,7 +122,7 @@ public class EditFillUp extends Activity {
 	    		((DatePickerDialog)dialog).onDateChanged(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
 	    		break;
 	    	case DISTANCE_PICKER_DIALOG:
-	    		((DistancePickerDialog)dialog).update(mFillUp.getmDistance(), mFillUp.getPreviousDistance(), mFillUp.getNextDistance());
+	    		((DistancePickerDialog)dialog).onDistanceChanged(mFillUp.getmDistance(), mFillUp.getPreviousDistance(), mFillUp.getNextDistance());
 	    		break;
 	    	}
     	}
@@ -131,6 +131,8 @@ public class EditFillUp extends Activity {
     @Override
     public void onResume() {
     	super.onResume();
+    	
+    	//use listener callbacks to refresh view
     	mDateSetListener.onDateSet(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
     	mDistanceSetListener.onDistanceSet(mFillUp.getmDistance());
     	mTimeSetListener.onTimeSet(null, mFillUp.getDateHours(), mFillUp.getDateMinutes());

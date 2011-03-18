@@ -18,23 +18,119 @@
 
 package biz.bruenn.fueloid.data;
 
-import java.util.ArrayList;
+import android.content.Context;
+import android.database.Cursor;
+import android.provider.BaseColumns;
 
-/**
- * @author adbrpa2
- * @version 1.0
- * @created 17-Jan-2011 10:35:34
- */
-public class Vehicle {
-
-	//private ArrayList<Statistic> mStatistics = new ArrayList<Statistic>();
-
-	public Vehicle(){
-
+public class Vehicle implements BaseColumns {
+	public static final String TABLE_NAME = "vehicle";
+	public static final String TITLE = "title";
+	public static final String SQL_CREATE_TABLE =
+		"CREATE TABLE " + TABLE_NAME + " ("
+			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ TITLE +" TEXT);";	
+	
+	
+	private FueloidDatabaseHelper mDBHelper;
+	private long mId;
+	public Vehicle(Context context){
+		mDBHelper = new FueloidDatabaseHelper(context);
+		mId = 1;
 	}
 
 	public void finalize() throws Throwable {
 
 	}
 
+	/**
+	 * Add new fill-up to this vehicle
+	 * @param newItem
+	 */
+	public void addFillUp(FillUp newItem) {
+		VehicleFillupColumns.insert(mDBHelper, this, newItem);
+	}
+
+	/**
+	 * Retrieve the distance between first and last fill-up of this vehicle
+	 * @return 0 in case of an error
+	 */
+	public int getDistance() {
+		final String[] args = new String[] {String.valueOf(mId)};		
+		final String queryMinMaxDistance = "SELECT MIN(" + FillUp.COLDISTANCE + "), " +
+			"MAX(" + FillUp.COLDISTANCE + ") " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+		
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getColumnCount() == 2) {
+			return c.getInt(1) - c.getInt(0);
+		}		
+		return 0;
+	}
+	
+	public Cursor getFillUpsCursor() {
+		return VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, this);
+	}
+	
+	public FillUp getLastFillUp() {
+		final String[] args = new String[] { String.valueOf(mId) };
+		final String queryMinMaxDistance = "SELECT " + FillUp.COLID + ", "
+				+ "MAX(" + FillUp.COLDISTANCE + ") " + "FROM "
+				+ VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		if (null != c && c.getColumnCount() == 2) {
+			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
+			return FillUp.getFillUp(mDBHelper, id);
+		}
+		return null;
+	}
+       
+		public float getLiter() {
+		final String[] args = new String[] {String.valueOf(mId)};		
+		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+		
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getColumnCount() == 1) {
+			return c.getFloat(0);
+		}		
+		return 0f;
+	}
+	
+	public float getLiterPerDistance() {
+		final int distance = getDistance();
+		if(0 >= distance) {
+			return 0f;
+		}
+		return getLiter()/distance;
+	}
+	
+	public long getmId() {
+		return mId;
+	}
+	
+	public float getMoney() {
+		final String[] args = new String[] {String.valueOf(mId)};		
+		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+		
+		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getColumnCount() == 1) {
+			return c.getFloat(0);
+		}		
+		return 0f;
+	}
+	
+	public float getMoneyPerLiter() {
+		final float liter = getLiter();
+		if(0 >= liter) {
+			return 0f;
+		}
+		return getMoney()/liter;
+	}
+
+	public boolean removeFillUp(FillUp f) {
+		VehicleFillupColumns.delete(mDBHelper, this, f);
+		return true;
+	}
 }
