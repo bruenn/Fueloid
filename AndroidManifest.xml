@@ -3,7 +3,7 @@
       package="biz.bruenn.fueloid"
       android:versionCode="1"
       android:versionName="1.0">
-    <application android:icon="@drawable/icon" android:label="@string/app_name">
+    <application android:icon="@drawable/gaspump" android:label="@string/app_name">
         <activity android:name=".FillUpList"
                   android:label="@string/app_name">
             <intent-filter>
@@ -12,5 +12,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".EditFillUp"></activity>
+        <activity android:name=".StatisticList"></activity>
     </application>    
 </manifest> 

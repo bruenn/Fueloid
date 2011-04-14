@@ -28,7 +28,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +38,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import biz.bruenn.fueloid.EditFillUp;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
@@ -47,7 +48,7 @@ import biz.bruenn.fueloid.data.VehicleFillupColumns;
 public class FillUpList extends ListActivity {
 	FueloidDatabaseHelper mDBHelper;
 	FillUpAdapter mFillUpAdapter;
-	Vehicle mVehicle;
+	final Vehicle mVehicle = new Vehicle(this); //TODO 
 	
     /** Called when the activity is first created. */
     @Override
@@ -57,15 +58,12 @@ public class FillUpList extends ListActivity {
         
          
         mDBHelper = new FueloidDatabaseHelper(this);
-        mVehicle = new Vehicle(this);
         
         TextView addButton = (TextView)findViewById(R.id.addFillup);
-        addButton.setOnClickListener(mOnClickListener);
-        
+        addButton.setOnClickListener(mOnClickListener);      
         
 	    mFillUpAdapter = new FillUpAdapter(this, VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
 	    
-
 	    this.setListAdapter(mFillUpAdapter);
 	    this.getListView().setOnItemClickListener(new FillUpListOnItemClickListener());
 	    registerForContextMenu(getListView());
@@ -74,9 +72,17 @@ public class FillUpList extends ListActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu_fillup, menu);
+
+		getMenuInflater().inflate(R.menu.menu_fillup, menu);
 	}
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	super.onCreateOptionsMenu(menu);
+    	
+    	getMenuInflater().inflate(R.menu.options_vehicle, menu);
+    	return true;
+    }
     
     @Override
     public boolean onContextItemSelected(MenuItem item) {
@@ -93,6 +99,18 @@ public class FillUpList extends ListActivity {
     		return super.onContextItemSelected(item);
     	}
     }
+    
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.statistics:
+			Intent i = new Intent(this, StatisticList.class);
+			startActivityForResult(i, 0);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
     
     @Override
     public void onResume() {
