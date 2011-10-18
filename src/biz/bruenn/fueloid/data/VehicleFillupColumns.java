@@ -26,14 +26,24 @@ import android.provider.BaseColumns;
 
 public class VehicleFillupColumns implements BaseColumns {
 	public static final String TABLE_NAME = "ltvf";//"linktable_vehicle_fillups";
-	public static final String VID = "sid"; //vehicle id
+	public static final String VID = "sid"; //vehicle id //TODO rename to "vid"
 	public static final String FID = "fid"; //fill-up id	
 	public static final String COLSID = TABLE_NAME + "." + VID;
 	public static final String COLFID = TABLE_NAME + "." + FID;
 	
-	public static final String FILLUPS_OF_VEHICLE = FillUp.TABLE_NAME + ", " + TABLE_NAME + " " +
-		"WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "= ?;";
+	public static final String FILLUPS_AND_VEHICLE = " " + FillUp.TABLE_NAME + ", " + TABLE_NAME + " ";
+	public static final String VEHICLE_ID_EQUALS = " " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "= ?";
 	
+	public static final String FILLUPS_OF_VEHICLE = FillUp.TABLE_NAME + ", " + TABLE_NAME + " " +
+	"WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "= ?;";
+
+	public static final String FILLUPS_OF_VEHICLE_LIMITED = FillUp.TABLE_NAME + ", " + TABLE_NAME + " " +
+	"WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "= ? ORDER BY " + FillUp.COLFILLDATE + " DESC LIMIT ?;";
+
+	public static final String FILLUPS_OF_VEHICLE_IN_TIMESPAN = FillUp.TABLE_NAME + ", " + TABLE_NAME + " " +
+	"WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "= ? AND " +
+	FillUp.COLFILLDATE + ">= ? AND " + FillUp.COLFILLDATE + "<= ?;";
+
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -57,7 +67,13 @@ public class VehicleFillupColumns implements BaseColumns {
     	}
 	}
 	
-	public static Cursor getFillUpsOfVehicle(FueloidDatabaseHelper dh, Vehicle s) {
+	/**
+	 * 
+	 * @param dh database helper
+	 * @param vehicle of which fillups we request
+	 * @return a Cursor to the fillups of the given vehicle or null in case of an error
+	 */
+	public static Cursor getFillUpsOfVehicle(FueloidDatabaseHelper dh, Vehicle v) {
 		SQLiteDatabase db = null;
 		try {
 			db = dh.getReadableDatabase();
@@ -70,7 +86,7 @@ public class VehicleFillupColumns implements BaseColumns {
 								FillUp.COLMONEY + 
 					" FROM " + FillUp.TABLE_NAME + ", " + TABLE_NAME +
 					" WHERE " + COLFID + "=" + FillUp.COLID + " AND " + COLSID + "=?"+
-					" ORDER BY " + FillUp.COLFILLDATE + " DESC", new String[] {String.valueOf(s.getmId())});
+					" ORDER BY " + FillUp.COLFILLDATE + " DESC", new String[] {String.valueOf(v.getmId())});
 				if(null != c) {
 					c.moveToFirst();
 				}

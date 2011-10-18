@@ -10,11 +10,11 @@
 	    android:text="OverallDistance"
     />
     <TextView
-		android:id="@+id/addFillup"
+		android:id="@+id/addRefuel"
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content"
 	    android:gravity="center_horizontal" 
-	    android:text="Add new fillup"
+	    android:text="Add refuel"
 	    android:textSize="24sp"
     />
     <ListView

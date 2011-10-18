@@ -18,29 +18,27 @@
 
 package biz.bruenn.fueloid.data;
 
-public class Statistic {
-	private final Vehicle mVehicle;
-	
+public abstract class Statistic {
+
+	protected final Vehicle mVehicle;
+
 	public static final Statistic[] getStatistics(Vehicle vehicle) {
 		return new Statistic[] {
-				new Statistic(vehicle),
+				new TimeStatistic(vehicle, 31),
+				new TimeStatistic(vehicle, 7),
+				new NumberStatistic(vehicle, 3),
 		};
 	}
-	
+
 	public Statistic(Vehicle vehicle) {
 		mVehicle = vehicle;
 	}
-	
-	public int getDistance() {
-		return mVehicle.getDistance();
-		// TODO 
-	}
-	
-	public float getLiter() {
-		// TODO implement this
-		return 0f;
-	}
-	
+
+	abstract public int getDistance();
+	abstract public float getLiter();
+	abstract public float getMoney();
+	abstract public CharSequence getTitle();
+
 	public float getLiterPerDistance() {
 		int distance = getDistance();
 		if(distance > 0) {
@@ -48,12 +46,7 @@ public class Statistic {
 		}
 		return 0f;
 	}
-	
-	public float getMoney() {
-		// TODO implement this
-		return 0f;
-	}
-	
+
 	public float getMoneyPerLiter() {
 		float money = getMoney();
 		if(money > 0f) {
@@ -61,5 +54,4 @@ public class Statistic {
 		}
 		return 0f;
 	}
-
 }

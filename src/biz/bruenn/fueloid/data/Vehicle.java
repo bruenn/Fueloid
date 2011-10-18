@@ -18,6 +18,8 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.util.GregorianCalendar;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
@@ -30,6 +32,8 @@ public class Vehicle implements BaseColumns {
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ TITLE +" TEXT);";	
 	
+	//We assume there is no refuel tracked before 01.01.1900 ;-)
+	private static final GregorianCalendar FIRST_DATE = new GregorianCalendar(1900, 0, 1);
 	
 	private FueloidDatabaseHelper mDBHelper;
 	private long mId;
@@ -39,7 +43,6 @@ public class Vehicle implements BaseColumns {
 	}
 
 	public void finalize() throws Throwable {
-
 	}
 
 	/**
@@ -55,14 +58,56 @@ public class Vehicle implements BaseColumns {
 	 * @return 0 in case of an error
 	 */
 	public int getDistance() {
-		final String[] args = new String[] {String.valueOf(mId)};		
-		final String queryMinMaxDistance = "SELECT MIN(" + FillUp.COLDISTANCE + "), " +
-			"MAX(" + FillUp.COLDISTANCE + ") " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+		//TODO implement this correctly
+		return getDistance(Integer.MAX_VALUE);
+	}
+	
+	public int getDistance(int numberOfRefuels) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfRefuels)};		
+		final String query = "SELECT " + FillUp.COLDISTANCE + " " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
+
+		Cursor c = mDBHelper.protectedRawQuery(query, args);
+		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			return 0;
+		}
 		
-		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if(null != c && c.getColumnCount() == 2) {
-			return c.getInt(1) - c.getInt(0);
+		int upperDistance = c.getInt(0);
+		c.moveToLast();
+		return upperDistance - c.getInt(0);
+	}
+
+	/**
+	 * Retrieve the distance recorded in the given time span
+	 * @param start begin of the time span
+	 * @param end end of the time span
+	 * @return 0 in case of an error
+	 */
+	public int getDistance(GregorianCalendar start, GregorianCalendar end) {
+		int startDistance = getDistance(start);
+		int endDistance = getDistance(end);
+		
+		if(startDistance <= endDistance) {
+			return endDistance - startDistance;
+		}
+		return 0;
+	}
+
+	/**
+	 * Retrieve the distance of the last fill-up before the given date
+	 * @param date of the latest fill-up
+	 * @return 0 in case of an error
+	 */
+	public int getDistance(GregorianCalendar date) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(date.getTimeInMillis())};		
+		final String queryDistance = "SELECT MAX(" + FillUp.COLDISTANCE + ") " +
+			"FROM" + VehicleFillupColumns.FILLUPS_AND_VEHICLE +
+			"WHERE" + VehicleFillupColumns.VEHICLE_ID_EQUALS +
+			"AND " + FillUp.COLFILLDATE + "<=?;";
+		
+		Cursor c = mDBHelper.protectedRawQuery(queryDistance, args);
+		if(null != c && c.getColumnCount() == 1) {
+			return c.getInt(0);
 		}		
 		return 0;
 	}
@@ -78,20 +123,41 @@ public class Vehicle implements BaseColumns {
 				+ VehicleFillupColumns.FILLUPS_OF_VEHICLE;
 
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if (null != c && c.getColumnCount() == 2) {
+		if (null != c && c.getCount() > 0 && c.getColumnCount() == 2) {
 			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
 			return FillUp.getFillUp(mDBHelper, id);
 		}
 		return null;
 	}
        
-		public float getLiter() {
-		final String[] args = new String[] {String.valueOf(mId)};		
+	public float getLiter() {
+		return getLiter(FIRST_DATE, new GregorianCalendar());
+	}
+	
+	public float getLiter(int numberOfFillups) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfFillups)};		
+		final String query = "SELECT " + FillUp.COLLITER + " " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
+
+		Cursor c = mDBHelper.protectedRawQuery(query, args);
+		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			return 0f;
+		}
+		
+		float liter = 0f;
+		do {
+			liter += c.getFloat(0);
+		} while(c.moveToNext());
+		return liter;
+	}
+       
+	public float getLiter(GregorianCalendar start, GregorianCalendar end) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
 		
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if(null != c && c.getColumnCount() == 1) {
+		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
 		return 0f;
@@ -110,12 +176,33 @@ public class Vehicle implements BaseColumns {
 	}
 	
 	public float getMoney() {
-		final String[] args = new String[] {String.valueOf(mId)};		
+		return getMoney(FIRST_DATE, new GregorianCalendar());
+	}
+	
+	public float getMoney(int numberOfFillups) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfFillups)};		
+		final String queryMoneyOfLatestFillups = "SELECT " + FillUp.COLMONEY + " " +
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
+
+		Cursor c = mDBHelper.protectedRawQuery(queryMoneyOfLatestFillups, args);
+		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			return 0f;
+		}
+		
+		float money = 0f;
+		do {
+			money += c.getFloat(0);
+		} while(c.moveToNext());
+		return money;
+	}
+	
+	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
+		final String[] args = new String[] {String.valueOf(mId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
 		
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if(null != c && c.getColumnCount() == 1) {
+		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
 			return c.getFloat(0);
 		}		
 		return 0f;

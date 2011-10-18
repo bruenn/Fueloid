@@ -46,8 +46,8 @@ public class StatisticList extends ListActivity {
 
 	private class StatisticAdapter extends ArrayAdapter<Statistic> {
 
-		public StatisticAdapter(Context context, int textViewResourceId, Statistic[] objects) {
-			super(context, textViewResourceId, objects);
+		public StatisticAdapter(Context context, int textViewResourceId, Statistic[] statistics) {
+			super(context, textViewResourceId, statistics);
 		}
 
 		@Override
@@ -57,11 +57,11 @@ public class StatisticList extends ListActivity {
 			Statistic item = getItem(position);
 			TextView title = (TextView) view.findViewById(R.id.title);
 			if(null != title) {
-				title.setText(item.getDistance() + "km");
+				title.setText(item.getTitle());
 			}
 			TextView text  = (TextView) view.findViewById(R.id.text);
 			if(null != text) {
-				text.setText(item.getMoney() + "€");
+				text.setText(item.getDistance() + "km | " + item.getLiter() + "l | " + item.getMoney() + "€");
 			}
 			return view;
 		}

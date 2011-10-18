@@ -38,7 +38,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import biz.bruenn.fueloid.EditFillUp;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
@@ -59,7 +58,7 @@ public class FillUpList extends ListActivity {
          
         mDBHelper = new FueloidDatabaseHelper(this);
         
-        TextView addButton = (TextView)findViewById(R.id.addFillup);
+        TextView addButton = (TextView)findViewById(R.id.addRefuel);
         addButton.setOnClickListener(mOnClickListener);      
         
 	    mFillUpAdapter = new FillUpAdapter(this, VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
