@@ -26,7 +26,7 @@ import android.provider.BaseColumns;
 
 public class VehicleFillupColumns implements BaseColumns {
 	public static final String TABLE_NAME = "ltvf";//"linktable_vehicle_fillups";
-	public static final String VID = "sid"; //vehicle id //TODO rename to "vid"
+	public static final String VID = "vid"; //vehicle id
 	public static final String FID = "fid"; //fill-up id	
 	public static final String COLSID = TABLE_NAME + "." + VID;
 	public static final String COLFID = TABLE_NAME + "." + FID;
@@ -52,7 +52,7 @@ public class VehicleFillupColumns implements BaseColumns {
 
 	public static boolean delete(FueloidDatabaseHelper dh, Vehicle s, FillUp f) {
 		SQLiteDatabase db = null;
-		try {
+		try {			
 			db = dh.getWritableDatabase();
 			if(null != db) {
 				db.delete(TABLE_NAME, VID + "=" + s.getmId() + " AND " + FID + "=" + f.getmId(), null);

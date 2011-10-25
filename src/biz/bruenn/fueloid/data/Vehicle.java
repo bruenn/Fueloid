@@ -37,9 +37,14 @@ public class Vehicle implements BaseColumns {
 	
 	private FueloidDatabaseHelper mDBHelper;
 	private long mId;
-	public Vehicle(Context context){
+	
+	public Vehicle(Context context, long id) {
 		mDBHelper = new FueloidDatabaseHelper(context);
-		mId = 1;
+		mId = id;		
+	}
+	
+	public Vehicle(Context context) {
+		this(context, 1);
 	}
 
 	public void finalize() throws Throwable {
@@ -217,7 +222,11 @@ public class Vehicle implements BaseColumns {
 	}
 
 	public boolean removeFillUp(FillUp f) {
+		if(null == f) {
+			return false;
+		}
 		VehicleFillupColumns.delete(mDBHelper, this, f);
+		f.delete();
 		return true;
 	}
 }

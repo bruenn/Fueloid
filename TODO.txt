@@ -29,6 +29,9 @@ New features:
 
 Bugs:
 ================================================================
+-very slow sql performance!
+--optimize database queries to improve performance of statistic calculations
+
 -reimplement NumberPicker
 --allow overflow 9+1 = 0
 --add callback valueChanged
