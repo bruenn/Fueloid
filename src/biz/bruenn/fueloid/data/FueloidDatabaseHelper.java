@@ -18,6 +18,7 @@
 
 package biz.bruenn.fueloid.data;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,15 +30,23 @@ import android.util.Log;
  */
 public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	public Context mContext;
+	private SQLiteDatabase mDatabase;
 	
     static final String TAG = "FueloidDatabaseHelper";
     static final String DATABASE_NAME = "fueloid.db";
-    static final int DATABASE_VERSION = 19;
+    static final int DATABASE_VERSION = 20;
 	
     public FueloidDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mContext = context;
+        mDatabase = getWritableDatabase();
     }
+
+	public void finalize() throws Throwable {
+		if((null != mDatabase) && mDatabase.isOpen()) {
+			mDatabase.close();
+		}
+	}
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -56,6 +65,16 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
     
+    private boolean isDBAvailable() {
+    	if(null == mDatabase) {
+    		mDatabase = getWritableDatabase();
+    	}
+    	if(null == mDatabase) {
+    		return false;
+    	}
+    	return mDatabase.isOpen();
+    }
+    
     /**
      * Wrapper to SQLiteDatabase.rawQuery()
      * If an exception occurs it would be catch inside and null will be returned
@@ -68,23 +87,24 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
      * 		   more details.
      */
     public Cursor protectedRawQuery(String sql, String[] selectionArgs) {
-		SQLiteDatabase db = null;
-		Cursor result = null;
+    	if(!isDBAvailable()) {
+    		return null;
+    	}
 		try {
-			db = getReadableDatabase();
-			if(null != db) {
-				result = db.rawQuery(sql, selectionArgs);
-				if(null != result) {
-					result.moveToFirst();
-				}
+			Cursor result = mDatabase.rawQuery(sql, selectionArgs);
+			if(null != result) {
+				result.moveToFirst();
 			}
 			return result;
 	    } catch (Exception e) {
 	    	return null;    		
-	    } finally {
-	    	if(null != db ) {
-	    		db.close();
-	    	}
 	    }
 	}
+    
+    public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {
+    	if(!isDBAvailable()) {
+    		return 0;
+    	}
+    	return mDatabase.update(table, values, whereClause, whereArgs);
+    }
 }

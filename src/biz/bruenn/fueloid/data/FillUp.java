@@ -50,6 +50,7 @@ public class FillUp implements BaseColumns {
 			+ MONEY + " REAL);";
 	
 	private FueloidDatabaseHelper mDBHelper;
+	private SQLiteDatabase mDB;
 	private long mId;
 	private int mDistance;
 	private GregorianCalendar mFillDate = new GregorianCalendar();
@@ -164,30 +165,34 @@ public class FillUp implements BaseColumns {
 	 * @return distance of the next FillUp in time
 	 */
 	public int getNextDistance() {
+		int result = MAX_DISTANCE;
 		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
 		// TODO refactor query use SQLiteQueryBuilder
 		final String queryNextDistance = "SELECT " + DISTANCE +
 			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MIN(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"> ?)";
 		Cursor c = mDBHelper.protectedRawQuery(queryNextDistance, args);
 		if(null != c && c.moveToFirst()) {
-			return c.getInt(0);
-		}		
-		return MAX_DISTANCE;
+			result = c.getInt(0);
+		}	
+		if(null != c) c.close();
+		return result;
 	}
 	
 	/**
 	 * @return distance of the previous FillUp in time
 	 */
 	public int getPreviousDistance() {
+		int result = 0;
 		final String[] args = new String[] {String.valueOf(mFillDate.getTimeInMillis())};		
 		// TODO refactor query use SQLiteQueryBuilder
 		final String queryPreviousDistance = "SELECT " + DISTANCE +
 			" FROM " + TABLE_NAME + " WHERE " + FILLDATE + "=(SELECT MAX(" + FILLDATE + ") FROM " + TABLE_NAME + " WHERE " + FILLDATE +"< ?)";
 		Cursor c = mDBHelper.protectedRawQuery(queryPreviousDistance, args);
 		if(null != c && c.moveToFirst()) {
-			return c.getInt(0);
+			result = c.getInt(0);
 		}		
-		return 0;
+		if(null != c) c.close();
+		return result;
 	}
 	
 	/**
@@ -239,22 +244,12 @@ public class FillUp implements BaseColumns {
 	 * Write changed values to database
 	 */
     public void update() {
-    	SQLiteDatabase db = null;
-    	try {
-    		db = mDBHelper.getWritableDatabase();
-    		ContentValues values = new ContentValues();
-    		values.put(FillUp.DISTANCE, getmDistance());
-    		values.put(FillUp.FILLDATE, getTimeInMillis());
-    		values.put(FillUp.LITER, getmLiter());
-    		values.put(FillUp.MONEY, getmMoney());
-    		db.update(FillUp.TABLE_NAME, values, FillUp._ID + "=" + getmId(), null);
-    	} catch (Exception e) {
-    		
-    	} finally {
-    		if(null != db) {
-    			db.close();
-    		}
-    	}
+    	ContentValues values = new ContentValues();
+    	values.put(FillUp.DISTANCE, getmDistance());
+    	values.put(FillUp.FILLDATE, getTimeInMillis());
+    	values.put(FillUp.LITER, getmLiter());
+    	values.put(FillUp.MONEY, getmMoney());
+    	mDBHelper.update(FillUp.TABLE_NAME, values, FillUp._ID + "=" + getmId(), null);
     }
 	
     /**
@@ -313,9 +308,10 @@ public class FillUp implements BaseColumns {
      */
     public static FillUp getFillUp(FueloidDatabaseHelper openHelper, long id) {
     	SQLiteDatabase db = null;
+    	Cursor c = null;
     	try {
     		db = openHelper.getReadableDatabase();
-    		Cursor c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
+    		c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
     		if(null != c && c.moveToFirst())
     		{
         		return FillUp.getFillUp(openHelper, c);
@@ -326,6 +322,9 @@ public class FillUp implements BaseColumns {
     	} finally {
     		if(null != db) {
     			db.close();
+    		}
+    		if(null != c) {
+    			c.close();
     		}
     	}
     }

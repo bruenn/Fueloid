@@ -47,7 +47,7 @@ import biz.bruenn.fueloid.data.VehicleFillupColumns;
 public class FillUpList extends ListActivity {
 	FueloidDatabaseHelper mDBHelper;
 	FillUpAdapter mFillUpAdapter;
-	final Vehicle mVehicle = new Vehicle(this); //TODO 
+	Vehicle mVehicle;
 	
     /** Called when the activity is first created. */
     @Override
@@ -55,7 +55,7 @@ public class FillUpList extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-         
+        mVehicle = new Vehicle(this); //TODO  
         mDBHelper = new FueloidDatabaseHelper(this);
         
         TextView addButton = (TextView)findViewById(R.id.addRefuel);

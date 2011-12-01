@@ -31,13 +31,14 @@ import biz.bruenn.fueloid.data.Vehicle;
 
 public class StatisticList extends ListActivity {
 	StatisticAdapter mStatisticAdapter;
-	Vehicle mVehicle = new Vehicle(this); //TODO
+	Vehicle mVehicle;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.statistic_list);
+        mVehicle = new Vehicle(this); //TODO
         Statistic[] statistics = Statistic.getStatistics(mVehicle);
         mStatisticAdapter = new StatisticAdapter(this, R.layout.statistic_list_item, statistics);
 	    

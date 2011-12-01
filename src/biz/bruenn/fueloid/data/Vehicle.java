@@ -30,7 +30,8 @@ public class Vehicle implements BaseColumns {
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
-			+ TITLE +" TEXT);";	
+			+ TITLE +" TEXT);";
+	
 	
 	//We assume there is no refuel tracked before 01.01.1900 ;-)
 	private static final GregorianCalendar FIRST_DATE = new GregorianCalendar(1900, 0, 1);
@@ -74,12 +75,15 @@ public class Vehicle implements BaseColumns {
 
 		Cursor c = mDBHelper.protectedRawQuery(query, args);
 		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			if(null != c) c.close();
 			return 0;
 		}
 		
 		int upperDistance = c.getInt(0);
 		c.moveToLast();
-		return upperDistance - c.getInt(0);
+		int result = upperDistance - c.getInt(0);
+		c.close();
+		return result;
 	}
 
 	/**
@@ -111,10 +115,12 @@ public class Vehicle implements BaseColumns {
 			"AND " + FillUp.COLFILLDATE + "<=?;";
 		
 		Cursor c = mDBHelper.protectedRawQuery(queryDistance, args);
+		int result = 0;
 		if(null != c && c.getColumnCount() == 1) {
-			return c.getInt(0);
+			result = c.getInt(0);
 		}		
-		return 0;
+		if(null != c) c.close();
+		return result;
 	}
 	
 	public Cursor getFillUpsCursor() {
@@ -127,12 +133,14 @@ public class Vehicle implements BaseColumns {
 				+ "MAX(" + FillUp.COLDISTANCE + ") " + "FROM "
 				+ VehicleFillupColumns.FILLUPS_OF_VEHICLE;
 
+		FillUp result = null;
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if (null != c && c.getCount() > 0 && c.getColumnCount() == 2) {
-			int id = c.getInt(c.getColumnIndex(FillUp.COLID));
-			return FillUp.getFillUp(mDBHelper, id);
+			int id = c.getInt(c.getColumnIndex(FillUp._ID));
+			result = FillUp.getFillUp(mDBHelper, id);
 		}
-		return null;
+		if(null != c) c.close();
+		return result;
 	}
        
 	public float getLiter() {
@@ -146,6 +154,7 @@ public class Vehicle implements BaseColumns {
 
 		Cursor c = mDBHelper.protectedRawQuery(query, args);
 		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			if (null != c) c.close();
 			return 0f;
 		}
 		
@@ -153,6 +162,7 @@ public class Vehicle implements BaseColumns {
 		do {
 			liter += c.getFloat(0);
 		} while(c.moveToNext());
+		c.close();
 		return liter;
 	}
        
@@ -160,12 +170,13 @@ public class Vehicle implements BaseColumns {
 		final String[] args = new String[] {String.valueOf(mId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
 			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
-		
+		float result = 0f;
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
-			return c.getFloat(0);
+			result = c.getFloat(0);
 		}		
-		return 0f;
+		if(null != c) c.close();
+		return result;
 	}
 	
 	public float getLiterPerDistance() {
@@ -191,6 +202,7 @@ public class Vehicle implements BaseColumns {
 
 		Cursor c = mDBHelper.protectedRawQuery(queryMoneyOfLatestFillups, args);
 		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			if(null != c) c.close();
 			return 0f;
 		}
 		
@@ -198,6 +210,7 @@ public class Vehicle implements BaseColumns {
 		do {
 			money += c.getFloat(0);
 		} while(c.moveToNext());
+		c.close();
 		return money;
 	}
 	
@@ -206,11 +219,14 @@ public class Vehicle implements BaseColumns {
 		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
 			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
 		
+		float result = 0f;
+		
 		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
-			return c.getFloat(0);
+			result = c.getFloat(0);
 		}		
-		return 0f;
+		if(null != c) c.close();
+		return result;
 	}
 	
 	public float getMoneyPerLiter() {
