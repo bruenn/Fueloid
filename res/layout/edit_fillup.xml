@@ -26,19 +26,43 @@
 	    	android:textSize="36sp"
     	/>
  	</LinearLayout>
- 	<TextView
-		android:id="@+id/fillupDistance"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:textSize="36dp"/>
- 	<TextView
- 		android:id="@+id/fillupLiter"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:textSize="36sp"/>
-	<TextView
+ 	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
+	 	<ImageView
+	        android:id="@+id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+	        android:layout_marginRight="6dip"
+	        android:src="@drawable/distance" />
+ 		<TextView
+ 			android:id="@+id/fillupDistance"
+ 			android:layout_width="fill_parent"
+ 			android:layout_height="wrap_content"
+ 			android:textSize="36dp"/>
+ 	</LinearLayout>
+ 	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
+	 	<ImageView
+	        android:id="@+id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+	        android:layout_marginRight="6dip"
+	        android:src="@drawable/can" />
+	    <TextView
+	 		android:id="@+id/fillupLiter"
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content"
+			android:textSize="36sp"/>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
+	 	<ImageView
+	        android:id="@+id/icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+	        android:layout_marginRight="6dip"
+	        android:src="@drawable/gaspump" />
+	    <TextView
 	    android:id="@+id/fillupMoney"
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content"
 	   	android:textSize="36sp"/>
+	</LinearLayout>
 </LinearLayout>
