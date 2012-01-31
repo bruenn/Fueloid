@@ -97,6 +97,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 			}
 			return result;
 	    } catch (Exception e) {
+	    	System.out.print(e);
 	    	return null;    		
 	    }
 	}
