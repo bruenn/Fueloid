@@ -30,11 +30,13 @@ import android.provider.BaseColumns;
 
 public class FillUp implements BaseColumns {
 	public static final String TABLE_NAME = "fillups";
+	public static final String VEHICLE_ID = "vehicle_id";
 	public static final String DISTANCE = "distance";
 	public static final String FILLDATE = "filldate";
 	public static final String LITER = "liter";
 	public static final String MONEY = "money";
 	public static final String COLID = TABLE_NAME + "." + _ID;
+	public static final String COLVEHICLE_ID = TABLE_NAME + "." + VEHICLE_ID;
 	public static final String COLDISTANCE = TABLE_NAME + "." + DISTANCE;
 	public static final String COLFILLDATE = TABLE_NAME + "." + FILLDATE;
 	public static final String COLLITER = TABLE_NAME + "." + LITER;
@@ -44,18 +46,20 @@ public class FillUp implements BaseColumns {
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ VEHICLE_ID +" INTEGER, "
 			+ DISTANCE +" INTEGER, "
 			+ FILLDATE +" INTEGER, "
 			+ LITER +" REAL, "
-			+ MONEY + " REAL);";
+			+ MONEY + " REAL, "
+			+ "CONSTRAINT uuDistance UNIQUE(" + VEHICLE_ID + "," + DISTANCE + "));";
 	
 	private FueloidDatabaseHelper mDBHelper;
-	private SQLiteDatabase mDB;
 	private long mId;
 	private int mDistance;
 	private GregorianCalendar mFillDate = new GregorianCalendar();
 	private float mLiter;
 	private float mMoney;
+	private Vehicle mVehicle;
 	
 	/**
 	 * Constructor for objects created from database
@@ -65,9 +69,10 @@ public class FillUp implements BaseColumns {
 	 * @param liter
 	 * @param money
 	 */
-	private FillUp(FueloidDatabaseHelper openHelper, long id, int distance, Date date, float liter, float money) {
+	private FillUp(FueloidDatabaseHelper openHelper, long id, long vehicleId, int distance, Date date, float liter, float money) {
 		mDBHelper = openHelper;
 		mId = id;
+		mVehicle = new Vehicle(openHelper, vehicleId);
 		mDistance = distance;
 		mFillDate.setTime(date);
 		mLiter = liter;
@@ -76,6 +81,51 @@ public class FillUp implements BaseColumns {
 
 	public void finalize() throws Throwable {
 
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FillUp other = (FillUp) obj;
+		if (mDistance != other.mDistance)
+			return false;
+		if (mFillDate == null) {
+			if (other.mFillDate != null)
+				return false;
+		} else if (!mFillDate.equals(other.mFillDate))
+			return false;
+		if (mId != other.mId)
+			return false;
+		if (Float.floatToIntBits(mLiter) != Float.floatToIntBits(other.mLiter))
+			return false;
+		if (Float.floatToIntBits(mMoney) != Float.floatToIntBits(other.mMoney))
+			return false;
+		if (mVehicle == null) {
+			if (other.mVehicle != null)
+				return false;
+		} else if (!mVehicle.equals(other.mVehicle))
+			return false;
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + mDistance;
+		result = prime * result
+				+ ((mFillDate == null) ? 0 : mFillDate.hashCode());
+		result = prime * result + (int) (mId ^ (mId >>> 32));
+		result = prime * result + Float.floatToIntBits(mLiter);
+		result = prime * result + Float.floatToIntBits(mMoney);
+		result = prime * result
+				+ ((mVehicle == null) ? 0 : mVehicle.hashCode());
+		return result;
 	}
 	
 	public final long getmId() {
@@ -254,6 +304,7 @@ public class FillUp implements BaseColumns {
 	
     /**
      * Create a new FillUp object in database
+     * @deprecated move code to Vehcle.addFillUp()
      * @param openHelper database helper
      * @param distance initial value
      * @param date initial value
@@ -261,18 +312,19 @@ public class FillUp implements BaseColumns {
      * @param money initial value
      * @return newly created FillUp object representation or null if creation fails
      */
-    public static FillUp create(FueloidDatabaseHelper openHelper, int distance, Date date, float liter, float money) {
+    public static FillUp create(FueloidDatabaseHelper openHelper, long vehicleId, int distance, Date date, float liter, float money) {
     	SQLiteDatabase db = null;
     	try {
     		db = openHelper.getWritableDatabase();
     		ContentValues values = new ContentValues();
-    		values.put(FillUp.DISTANCE, distance);
-    		values.put(FillUp.FILLDATE, date.getTime());
-    		values.put(FillUp.LITER, liter);
-    		values.put(FillUp.MONEY, money);
-    		long id = db.insert(FillUp.TABLE_NAME, null, values);
+    		values.put(VEHICLE_ID, vehicleId);
+    		values.put(DISTANCE, distance);
+    		values.put(FILLDATE, date.getTime());
+    		values.put(LITER, liter);
+    		values.put(MONEY, money);
+    		long id = db.insert(TABLE_NAME, null, values);
     		if(-1 != id) {
-    			return new FillUp(openHelper, id, distance, date, liter, money);
+    			return new FillUp(openHelper, id, vehicleId, distance, date, liter, money);
     		}
     		return null;
     	} catch (SQLiteException e) {
@@ -311,7 +363,7 @@ public class FillUp implements BaseColumns {
     	Cursor c = null;
     	try {
     		db = openHelper.getReadableDatabase();
-    		c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
+    		c = db.query(FillUp.TABLE_NAME, new String[] {FillUp._ID, FillUp.VEHICLE_ID, FillUp.DISTANCE, FillUp.FILLDATE, FillUp.LITER, FillUp.MONEY}, FillUp._ID + "=" + id, null, null, null, null);
     		if(null != c && c.moveToFirst())
     		{
         		return FillUp.getFillUp(openHelper, c);
@@ -336,14 +388,15 @@ public class FillUp implements BaseColumns {
      * @return fill-up object representation or null if cursor was flawed
      */
 	private static FillUp getFillUp(FueloidDatabaseHelper openHelper, Cursor cursor) {	
-		if((null != cursor) && (cursor.getColumnCount() == 5)) {
+		if((null != cursor) && (cursor.getColumnCount() == 6)) {
 			try {
 				int id = cursor.getInt(cursor.getColumnIndexOrThrow(_ID));
+				long vehicleId = cursor.getLong(cursor.getColumnIndexOrThrow(VEHICLE_ID));
 				int distance = cursor.getInt(cursor.getColumnIndexOrThrow(DISTANCE));
 				Date fillDate = new Date(cursor.getLong(cursor.getColumnIndexOrThrow(FILLDATE)));
 				float liter = cursor.getFloat(cursor.getColumnIndexOrThrow(LITER));
 				float money = cursor.getFloat(cursor.getColumnIndexOrThrow(MONEY));
-				return new FillUp(openHelper, id, distance, fillDate, liter, money);
+				return new FillUp(openHelper, id, vehicleId, distance, fillDate, liter, money);
 			} catch (IllegalArgumentException e) {
 				return null;
 			} finally {

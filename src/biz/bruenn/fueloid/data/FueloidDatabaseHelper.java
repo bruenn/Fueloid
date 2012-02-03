@@ -18,6 +18,8 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.util.GregorianCalendar;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -34,7 +36,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	
     static final String TAG = "FueloidDatabaseHelper";
     static final String DATABASE_NAME = "fueloid.db";
-    static final int DATABASE_VERSION = 20;
+    static final int DATABASE_VERSION = 24;
 	
     public FueloidDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -66,7 +68,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
     }
     
     private boolean isDBAvailable() {
-    	if(null == mDatabase) {
+    	if(null == mDatabase || !mDatabase.isOpen()) {
     		mDatabase = getWritableDatabase();
     	}
     	if(null == mDatabase) {
@@ -100,6 +102,44 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	    	System.out.print(e);
 	    	return null;    		
 	    }
+	}
+    
+	public float queryFillUpSumForLast(String columnName, long vehicleId, int numFillups) {
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};		
+		final String queryMinMaxDistance = "SELECT "+ columnName +" FROM " +
+			FillUp.TABLE_NAME + " WHERE " +
+			FillUp.VEHICLE_ID + "=? ORDER BY " +
+			FillUp.DISTANCE + " DESC LIMIT ?;";
+		
+		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
+			if(null != c) c.close();
+			return 0f;
+		}
+		
+		float sum = 0f;
+		do {
+			sum += c.getFloat(0);
+		} while(c.moveToNext());
+		c.close();
+		return sum;
+	}
+    
+	public float queryFillUpSumInTimespan(String columnName, long vehicleId, GregorianCalendar start, GregorianCalendar end) {
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
+		final String queryMinMaxDistance = "SELECT SUM(" + columnName + ") " +
+			"FROM " + FillUp.TABLE_NAME + " WHERE " +
+			FillUp.COLVEHICLE_ID + "=? AND " +
+			FillUp.COLFILLDATE + ">=? AND " +
+			FillUp.COLFILLDATE + "<=?;";
+		
+		float result = 0f;
+		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
+			result = c.getFloat(0);
+		}		
+		if(null != c) c.close();
+		return result;
 	}
     
     public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {

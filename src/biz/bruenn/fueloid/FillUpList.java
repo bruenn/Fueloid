@@ -54,9 +54,9 @@ public class FillUpList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
-        mVehicle = new Vehicle(this); //TODO  
+
         mDBHelper = new FueloidDatabaseHelper(this);
+        mVehicle = new Vehicle(mDBHelper, Vehicle.UNIQUE_VEHICLE_ID);
         
         TextView addButton = (TextView)findViewById(R.id.addRefuel);
         addButton.setOnClickListener(mOnClickListener);      
@@ -160,11 +160,10 @@ public class FillUpList extends ListActivity {
     	FillUp lastFillUp = mVehicle.getLastFillUp();
     	FillUp newFillUp = null;
     	if(null != lastFillUp) {
-    		newFillUp = FillUp.create(mDBHelper, lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
+    		newFillUp = mVehicle.addFillUp(lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
     	} else {
-    		newFillUp = FillUp.create(mDBHelper, 0, new Date(), 0f, 0f);
+    		newFillUp = mVehicle.addFillUp(0, new Date(), 0f, 0f);
     	}
-		mVehicle.addFillUp(newFillUp);
 		Intent i = new Intent(v.getContext(), EditFillUp.class);
 		i.putExtra(FillUp.TABLE_NAME, newFillUp.getmId());
 		startActivityForResult(i, 0);

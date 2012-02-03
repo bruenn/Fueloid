@@ -18,13 +18,19 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 public class Vehicle implements BaseColumns {
+	public static final int UNIQUE_VEHICLE_ID = 1; //TODO add support for multiple vehicle
 	public static final String TABLE_NAME = "vehicle";
 	public static final String TITLE = "title";
 	public static final String SQL_CREATE_TABLE =
@@ -39,27 +45,81 @@ public class Vehicle implements BaseColumns {
 	private FueloidDatabaseHelper mDBHelper;
 	private long mId;
 	
-	public Vehicle(Context context, long id) {
-		mDBHelper = new FueloidDatabaseHelper(context);
+	public Vehicle(FueloidDatabaseHelper dbHelper, long id) {
+		mDBHelper = dbHelper;
 		mId = id;		
-	}
-	
-	public Vehicle(Context context) {
-		this(context, 1);
 	}
 
 	public void finalize() throws Throwable {
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Vehicle other = (Vehicle) obj;
+		if (mId != other.mId)
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (mId ^ (mId >>> 32));
+		return result;
+	}
+
+
 	/**
-	 * Add new fill-up to this vehicle
-	 * @param newItem
+	 * Create a new fill-up for this vehicle
+	 * @param openHelper
+	 * @param vehicleId
+	 * @param distance
+	 * @param date
+	 * @param liter
+	 * @param money
+	 * @return the created fill-up or null if something went wrong
 	 */
-	public void addFillUp(FillUp newItem) {
-		VehicleFillupColumns.insert(mDBHelper, this, newItem);
+	public FillUp addFillUp(int distance, Date date, float liter, float money) {
+		return FillUp.create(mDBHelper, mId, distance, date, liter, money);
+	}
+	
+	//TODO finish implementation
+	public boolean exportToCsv(String filename) {
+		try {
+			FileWriter f = new FileWriter(filename);
+
+			Cursor c = this.getFillUpsCursor();
+			int indexDistance = c.getColumnIndex(FillUp.COLDISTANCE);
+			int indexDate = c.getColumnIndex(FillUp.COLFILLDATE);
+			int indexLiter = c.getColumnIndex(FillUp.COLLITER);
+			int indexMoney = c.getColumnIndex(FillUp.COLMONEY);
+			
+			while(!c.isAfterLast()) {
+				f.append(c.getString(indexDistance) + ";"
+						+ c.getString(indexDate) + ";"
+						+ c.getString(indexLiter) + ";"
+						+ c.getString(indexMoney) +"\n");
+				c.moveToNext();
+			}
+			f.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**
+	 * @deprecated
 	 * Retrieve the distance between first and last fill-up of this vehicle
 	 * @return 0 in case of an error
 	 */
@@ -68,6 +128,11 @@ public class Vehicle implements BaseColumns {
 		return getDistance(Integer.MAX_VALUE);
 	}
 	
+	/**
+	 * 
+	 * @param numberOfRefuels
+	 * @return the overall distance for the number of refuels specified
+	 */
 	public int getDistance(int numberOfRefuels) {
 		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfRefuels)};		
 		final String query = "SELECT " + FillUp.COLDISTANCE + " " +
@@ -84,22 +149,6 @@ public class Vehicle implements BaseColumns {
 		int result = upperDistance - c.getInt(0);
 		c.close();
 		return result;
-	}
-
-	/**
-	 * Retrieve the distance recorded in the given time span
-	 * @param start begin of the time span
-	 * @param end end of the time span
-	 * @return 0 in case of an error
-	 */
-	public int getDistance(GregorianCalendar start, GregorianCalendar end) {
-		int startDistance = getDistance(start);
-		int endDistance = getDistance(end);
-		
-		if(startDistance <= endDistance) {
-			return endDistance - startDistance;
-		}
-		return 0;
 	}
 
 	/**
@@ -123,62 +172,66 @@ public class Vehicle implements BaseColumns {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @return a Cursor to the fillups of this vehicle or null in case of an error
+	 */
 	public Cursor getFillUpsCursor() {
 		return VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, this);
 	}
 	
+	/**
+	 * 
+	 * @return the last refuel in time
+	 */
 	public FillUp getLastFillUp() {
 		final String[] args = new String[] { String.valueOf(mId) };
-		final String queryMinMaxDistance = "SELECT " + FillUp.COLID + ", "
-				+ "MAX(" + FillUp.COLDISTANCE + ") " + "FROM "
-				+ VehicleFillupColumns.FILLUPS_OF_VEHICLE;
+		final String queryLastFillupId =
+				"SELECT " + FillUp.COLID + ", MAX(" + FillUp.COLDISTANCE + ") " 
+				+ "FROM fillups WHERE "
+				+ FillUp.COLVEHICLE_ID + "=?;";
 
 		FillUp result = null;
-		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = mDBHelper.protectedRawQuery(queryLastFillupId, args);
 		if (null != c && c.getCount() > 0 && c.getColumnCount() == 2) {
-			int id = c.getInt(c.getColumnIndex(FillUp._ID));
+			long id = c.getLong(c.getColumnIndex(FillUp._ID));
 			result = FillUp.getFillUp(mDBHelper, id);
 		}
 		if(null != c) c.close();
 		return result;
 	}
-       
+    
+	/**
+	 * @deprecated
+	 * @return
+	 */
 	public float getLiter() {
 		return getLiter(FIRST_DATE, new GregorianCalendar());
 	}
 	
+	/**
+	 * 
+	 * @param numberOfFillups
+	 * @return sum of liters refueled during the last 'numberOfFillups'
+	 */
 	public float getLiter(int numberOfFillups) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfFillups)};		
-		final String query = "SELECT " + FillUp.COLLITER + " " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
-
-		Cursor c = mDBHelper.protectedRawQuery(query, args);
-		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
-			if (null != c) c.close();
-			return 0f;
-		}
-		
-		float liter = 0f;
-		do {
-			liter += c.getFloat(0);
-		} while(c.moveToNext());
-		c.close();
-		return liter;
-	}
-       
-	public float getLiter(GregorianCalendar start, GregorianCalendar end) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
-		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.LITER + ") " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
-		float result = 0f;
-		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
-			result = c.getFloat(0);
-		}		
-		if(null != c) c.close();
-		return result;
+		return mDBHelper.queryFillUpSumForLast(FillUp.LITER, mId, numberOfFillups);
 	}
 	
+	/**
+	 * 
+	 * @param start date of the interval
+	 * @param end date of the interval
+	 * @return the number of liter refueled during the interval [start, end]
+	 */
+	public float getLiter(GregorianCalendar start, GregorianCalendar end) {
+		return mDBHelper.queryFillUpSumInTimespan(FillUp.LITER, mId, start, end);
+	}
+	
+	/**
+	 * @deprecated
+	 * @return
+	 */
 	public float getLiterPerDistance() {
 		final int distance = getDistance();
 		if(0 >= distance) {
@@ -187,48 +240,44 @@ public class Vehicle implements BaseColumns {
 		return getLiter()/distance;
 	}
 	
+	/**
+	 * @return
+	 */
 	public long getmId() {
 		return mId;
 	}
 	
+	/**
+	 * @deprecated
+	 * @return
+	 */
 	public float getMoney() {
 		return getMoney(FIRST_DATE, new GregorianCalendar());
 	}
 	
+	/**
+	 * 
+	 * @param numberOfFillups
+	 * @return sum of money spend for the last 'numberOfFillups'
+	 */
 	public float getMoney(int numberOfFillups) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfFillups)};		
-		final String queryMoneyOfLatestFillups = "SELECT " + FillUp.COLMONEY + " " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
-
-		Cursor c = mDBHelper.protectedRawQuery(queryMoneyOfLatestFillups, args);
-		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
-			if(null != c) c.close();
-			return 0f;
-		}
-		
-		float money = 0f;
-		do {
-			money += c.getFloat(0);
-		} while(c.moveToNext());
-		c.close();
-		return money;
+		return mDBHelper.queryFillUpSumForLast(FillUp.MONEY, mId, numberOfFillups);
 	}
 	
+	/**
+	 * 
+	 * @param start date of the interval
+	 * @param end date of the interval
+	 * @return sum of money spend in the date interval [start, end]
+	 */
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
-		final String queryMinMaxDistance = "SELECT SUM(" + FillUp.COLMONEY + ") " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_IN_TIMESPAN;
-		
-		float result = 0f;
-		
-		Cursor c = mDBHelper.protectedRawQuery(queryMinMaxDistance, args);
-		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
-			result = c.getFloat(0);
-		}		
-		if(null != c) c.close();
-		return result;
+		return mDBHelper.queryFillUpSumInTimespan(FillUp.MONEY, mId, start, end);
 	}
 	
+	/**
+	 * @deprecated
+	 * @return
+	 */
 	public float getMoneyPerLiter() {
 		final float liter = getLiter();
 		if(0 >= liter) {
@@ -237,6 +286,11 @@ public class Vehicle implements BaseColumns {
 		return getMoney()/liter;
 	}
 
+	/**
+	 * 
+	 * @param f
+	 * @return
+	 */
 	public boolean removeFillUp(FillUp f) {
 		if(null == f) {
 			return false;

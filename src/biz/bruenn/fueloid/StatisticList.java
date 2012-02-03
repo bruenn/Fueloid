@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.Statistic;
 import biz.bruenn.fueloid.data.Vehicle;
 
@@ -38,7 +39,7 @@ public class StatisticList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.statistic_list);
-        mVehicle = new Vehicle(this); //TODO
+        mVehicle = new Vehicle(new FueloidDatabaseHelper(this), Vehicle.UNIQUE_VEHICLE_ID);
         Statistic[] statistics = Statistic.getStatistics(mVehicle);
         mStatisticAdapter = new StatisticAdapter(this, R.layout.statistic_list_item, statistics);
 	    

@@ -23,7 +23,11 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
-
+/**
+ * @deprecated useless! move one fillup is connected to exactly one vehicle! -> use vehicle id as attribute of fillup
+ * @author gpb
+ *
+ */
 public class VehicleFillupColumns implements BaseColumns {
 	public static final String TABLE_NAME = "ltvf";//"linktable_vehicle_fillups";
 	public static final String VID = "vid"; //vehicle id
