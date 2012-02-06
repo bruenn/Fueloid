@@ -304,7 +304,6 @@ public class FillUp implements BaseColumns {
 	
     /**
      * Create a new FillUp object in database
-     * @deprecated move code to Vehcle.addFillUp()
      * @param openHelper database helper
      * @param distance initial value
      * @param date initial value
@@ -339,13 +338,14 @@ public class FillUp implements BaseColumns {
     /**
      * Delete FillUp object from database
      */
-    public void delete() {
+    public boolean delete() {
     	SQLiteDatabase db = null;
     	try {
     		db = this.mDBHelper.getWritableDatabase();
     		db.delete(FillUp.TABLE_NAME, FillUp._ID + "=" + mId, null);
+    		return true;
     	} catch (Exception e) {
-    		
+    		return false;
     	} finally {
     		if(null != db) {
     			db.close();

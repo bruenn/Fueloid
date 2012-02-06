@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 public class Vehicle implements BaseColumns {
@@ -37,10 +34,6 @@ public class Vehicle implements BaseColumns {
 		"CREATE TABLE " + TABLE_NAME + " ("
 			+ _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ TITLE +" TEXT);";
-	
-	
-	//We assume there is no refuel tracked before 01.01.1900 ;-)
-	private static final GregorianCalendar FIRST_DATE = new GregorianCalendar(1900, 0, 1);
 	
 	private FueloidDatabaseHelper mDBHelper;
 	private long mId;
@@ -117,16 +110,6 @@ public class Vehicle implements BaseColumns {
 		
 		return true;
 	}
-
-	/**
-	 * @deprecated
-	 * Retrieve the distance between first and last fill-up of this vehicle
-	 * @return 0 in case of an error
-	 */
-	public int getDistance() {
-		//TODO implement this correctly
-		return getDistance(Integer.MAX_VALUE);
-	}
 	
 	/**
 	 * 
@@ -152,28 +135,6 @@ public class Vehicle implements BaseColumns {
 		}
 		return 0;
 	}
-
-	/**
-	 * @deprecated
-	 * Retrieve the distance of the last fill-up before the given date
-	 * @param date of the latest fill-up
-	 * @return 0 in case of an error
-	 */
-	public int getDistance(GregorianCalendar date) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(date.getTimeInMillis())};		
-		final String queryDistance = "SELECT MAX(" + FillUp.COLDISTANCE + ") " +
-			"FROM" + VehicleFillupColumns.FILLUPS_AND_VEHICLE +
-			"WHERE" + VehicleFillupColumns.VEHICLE_ID_EQUALS +
-			"AND " + FillUp.COLFILLDATE + "<=?;";
-		
-		Cursor c = mDBHelper.protectedRawQuery(queryDistance, args);
-		int result = 0;
-		if(null != c && c.getColumnCount() == 1) {
-			result = c.getInt(0);
-		}		
-		if(null != c) c.close();
-		return result;
-	}
 	
 	/**
 	 * Call this function to get a cursor for iteration over all fillups of
@@ -190,20 +151,12 @@ public class Vehicle implements BaseColumns {
 	 */
 	public FillUp getLastFillUp() {
 		Cursor c = mDBHelper.queryFillUps(mId, 1);
-		if(null == c) return null;
-		
-		FillUp result = FillUp.getFillUp(mDBHelper, c);
-		
-		c.close();
+		FillUp result = null;
+		if(null != c) {
+			result = FillUp.getFillUp(mDBHelper, c);
+			c.close();
+		}
 		return result;
-	}
-    
-	/**
-	 * @deprecated
-	 * @return
-	 */
-	public float getLiter() {
-		return getLiter(FIRST_DATE, new GregorianCalendar());
 	}
 	
 	/**
@@ -226,33 +179,6 @@ public class Vehicle implements BaseColumns {
 	}
 	
 	/**
-	 * @deprecated
-	 * @return
-	 */
-	public float getLiterPerDistance() {
-		final int distance = getDistance();
-		if(0 >= distance) {
-			return 0f;
-		}
-		return getLiter()/distance;
-	}
-	
-	/**
-	 * @return
-	 */
-	public long getmId() {
-		return mId;
-	}
-	
-	/**
-	 * @deprecated
-	 * @return
-	 */
-	public float getMoney() {
-		return getMoney(FIRST_DATE, new GregorianCalendar());
-	}
-	
-	/**
 	 * 
 	 * @param numberOfFillups
 	 * @return sum of money spend for the last 'numberOfFillups'
@@ -270,29 +196,17 @@ public class Vehicle implements BaseColumns {
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
 		return mDBHelper.querySumInTimespan(FillUp.MONEY, mId, start, end);
 	}
-	
-	/**
-	 * @deprecated
-	 * @return
-	 */
-	public float getMoneyPerLiter() {
-		final float liter = getLiter();
-		if(0 >= liter) {
-			return 0f;
-		}
-		return getMoney()/liter;
-	}
 
 	/**
-	 * 
-	 * @param f
-	 * @return
+	 * Remove fill-up from vehicle and database
+	 * @param f fill-up to delete
+	 * @return true if fill-up was deleted from database
 	 */
 	public boolean removeFillUp(FillUp f) {
 		if(null == f) {
 			return false;
 		}
-		VehicleFillupColumns.delete(mDBHelper, this, f);
+		
 		f.delete();
 		return true;
 	}

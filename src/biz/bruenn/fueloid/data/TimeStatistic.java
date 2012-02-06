@@ -35,13 +35,7 @@ public class TimeStatistic extends Statistic {
 
 	@Override
 	public int getDistance() {
-		int startDistance = mVehicle.getDistance(mStartDate);
-		int endDistance = mVehicle.getDistance(mEndDate);
-		
-		if(startDistance <= endDistance) {
-			return endDistance - startDistance;
-		}
-		return 0;
+		return mVehicle.getDistance(mStartDate, mEndDate);
 	}
 
 	@Override

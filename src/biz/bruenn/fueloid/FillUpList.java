@@ -42,7 +42,6 @@ import biz.bruenn.fueloid.EditFillUp;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
 import biz.bruenn.fueloid.data.Vehicle;
-import biz.bruenn.fueloid.data.VehicleFillupColumns;
 
 public class FillUpList extends ListActivity {
 	FueloidDatabaseHelper mDBHelper;
@@ -59,9 +58,9 @@ public class FillUpList extends ListActivity {
         mVehicle = new Vehicle(mDBHelper, Vehicle.UNIQUE_VEHICLE_ID);
         
         TextView addButton = (TextView)findViewById(R.id.addRefuel);
-        addButton.setOnClickListener(mOnClickListener);      
-        
-	    mFillUpAdapter = new FillUpAdapter(this, VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
+        addButton.setOnClickListener(mOnClickListener);
+	   
+        mFillUpAdapter = new FillUpAdapter(this, mVehicle.getFillUpsCursor());
 	    
 	    this.setListAdapter(mFillUpAdapter);
 	    this.getListView().setOnItemClickListener(new FillUpListOnItemClickListener());
@@ -119,13 +118,17 @@ public class FillUpList extends ListActivity {
     
     private void updateText() {
     	//reread fillup list from database, by updating the list adapters cursor
-    	((FillUpAdapter)this.getListAdapter()).changeCursor(VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, mVehicle));
+    	((FillUpAdapter)this.getListAdapter()).changeCursor(mVehicle.getFillUpsCursor());
     	TextView mDistance = (TextView)this.findViewById(R.id.vehicleDistance);
-    	mDistance.setText(mVehicle.getDistance() + "km|"
-    					+ mVehicle.getMoney() + "€|"
-    					+ mVehicle.getLiter() + "l|"
-    					+ mVehicle.getLiterPerDistance() + "l/km|"
-    					+ mVehicle.getMoneyPerLiter() + "€/l");
+    	//TODO use a statistic object here
+    	int distance = mVehicle.getDistance(1);
+    	float liter = mVehicle.getLiter(1);
+    	float money = mVehicle.getMoney(1);
+    	mDistance.setText(distance + "km|"
+    					+ money + "€|"
+    					+ liter + "l|"
+    					+ liter/distance + "l/km|"
+    					+ money/liter + "€/l");
 	}
 
 	private class FillUpAdapter extends CursorAdapter {

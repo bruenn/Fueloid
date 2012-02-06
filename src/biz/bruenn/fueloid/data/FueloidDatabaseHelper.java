@@ -36,7 +36,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	
     static final String TAG = "FueloidDatabaseHelper";
     static final String DATABASE_NAME = "fueloid.db";
-    static final int DATABASE_VERSION = 24;
+    static final int DATABASE_VERSION = 25;
 	
     public FueloidDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -54,7 +54,6 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
     	db.execSQL(FillUp.SQL_CREATE_TABLE);
     	db.execSQL(Vehicle.SQL_CREATE_TABLE);
-    	db.execSQL(VehicleFillupColumns.SQL_CREATE_TABLE);
     }
 
     @Override
@@ -63,7 +62,6 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
                 + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + FillUp.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Vehicle.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + VehicleFillupColumns.TABLE_NAME);
         onCreate(db);
     }
     
