@@ -104,7 +104,70 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	    }
 	}
     
-	public float queryFillUpSumForLast(String columnName, long vehicleId, int numFillups) {
+	public int queryDistanceForDate(long vehicleId, GregorianCalendar date) {
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(date.getTimeInMillis())};		
+		final String queryMinMaxDistance = "SELECT MAX(" + FillUp.DISTANCE + ") " +
+			"FROM " + FillUp.TABLE_NAME + " WHERE " +
+			FillUp.COLVEHICLE_ID + "=? AND " +
+			FillUp.COLFILLDATE + "<=?;";
+		
+		int result = 0;
+		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
+			result = c.getInt(0);
+		}		
+		if(null != c) c.close();
+		return result;
+	}
+    
+	public int queryDistanceForLast(long vehicleId, int numFillups) {
+		if(numFillups <= 0) {
+			return 0;
+		}
+		/** increase numFillups by one to fulfill requirement distance(1)
+		 * which would be distance(now) - distance(last)
+		 */
+		numFillups++;
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};		
+		final String queryMinMaxDistance = "SELECT "+ FillUp.DISTANCE +" FROM " +
+			FillUp.TABLE_NAME + " WHERE " +
+			FillUp.VEHICLE_ID + "=? ORDER BY " +
+			FillUp.DISTANCE + " DESC LIMIT ?;";
+		
+		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		if(null == c || c.getCount() < 2 || c.getColumnCount() != 1) {
+			if(null != c) c.close();
+			return 0;
+		}
+		
+		int distance = c.getInt(0);
+		c.moveToLast();
+		distance -= c.getInt(0);
+		c.close();
+		return distance;
+	}
+    
+	public Cursor queryFillUps(long vehicleId, int numFillups) {
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};		
+		final String queryMinMaxDistance = "SELECT * FROM " +
+			FillUp.TABLE_NAME + " WHERE " +
+			FillUp.VEHICLE_ID + "=? ORDER BY " +
+			FillUp.DISTANCE + " DESC LIMIT ?;";
+		
+		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		if(null != c && c.getCount() >= 1) {
+			c.moveToFirst();
+			return c;
+		}
+		
+		if(null != c) c.close();
+		return null;
+	}
+    
+	public float querySumForLast(String columnName, long vehicleId, int numFillups) {
+		if(numFillups <= 0) {
+			return 0f;
+		}
 		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};		
 		final String queryMinMaxDistance = "SELECT "+ columnName +" FROM " +
 			FillUp.TABLE_NAME + " WHERE " +
@@ -125,7 +188,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		return sum;
 	}
     
-	public float queryFillUpSumInTimespan(String columnName, long vehicleId, GregorianCalendar start, GregorianCalendar end) {
+	public float querySumInTimespan(String columnName, long vehicleId, GregorianCalendar start, GregorianCalendar end) {
 		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
 		final String queryMinMaxDistance = "SELECT SUM(" + columnName + ") " +
 			"FROM " + FillUp.TABLE_NAME + " WHERE " +

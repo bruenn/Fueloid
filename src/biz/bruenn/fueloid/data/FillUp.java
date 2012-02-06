@@ -387,8 +387,8 @@ public class FillUp implements BaseColumns {
      * @param cursor cursor to a database fill-up column
      * @return fill-up object representation or null if cursor was flawed
      */
-	private static FillUp getFillUp(FueloidDatabaseHelper openHelper, Cursor cursor) {	
-		if((null != cursor) && (cursor.getColumnCount() == 6)) {
+	static FillUp getFillUp(FueloidDatabaseHelper openHelper, Cursor cursor) {	
+		if((null != cursor) && (cursor.getCount() > 0)&& (cursor.getColumnCount() == 6)) {
 			try {
 				int id = cursor.getInt(cursor.getColumnIndexOrThrow(_ID));
 				long vehicleId = cursor.getLong(cursor.getColumnIndexOrThrow(VEHICLE_ID));

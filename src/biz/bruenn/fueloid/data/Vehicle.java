@@ -130,28 +130,31 @@ public class Vehicle implements BaseColumns {
 	
 	/**
 	 * 
-	 * @param numberOfRefuels
+	 * @param numberOfFillups
 	 * @return the overall distance for the number of refuels specified
 	 */
-	public int getDistance(int numberOfRefuels) {
-		final String[] args = new String[] {String.valueOf(mId), String.valueOf(numberOfRefuels)};		
-		final String query = "SELECT " + FillUp.COLDISTANCE + " " +
-			"FROM " + VehicleFillupColumns.FILLUPS_OF_VEHICLE_LIMITED;
-
-		Cursor c = mDBHelper.protectedRawQuery(query, args);
-		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
-			if(null != c) c.close();
-			return 0;
-		}
-		
-		int upperDistance = c.getInt(0);
-		c.moveToLast();
-		int result = upperDistance - c.getInt(0);
-		c.close();
-		return result;
+	public int getDistance(int numberOfFillups) {
+		return mDBHelper.queryDistanceForLast(mId, numberOfFillups);
 	}
 
 	/**
+	 * Retrieve the distance of the last fill-up before the given date
+	 * @param date of the latest fill-up
+	 * @return 0 in case of an error
+	 */
+	public int getDistance(GregorianCalendar startDate, GregorianCalendar endDate) {
+		
+		int startDistance = mDBHelper.queryDistanceForDate(mId, startDate);
+		int endDistance = mDBHelper.queryDistanceForDate(mId, endDate);
+		
+		if(endDistance > startDistance) {
+			return endDistance - startDistance;
+		}
+		return 0;
+	}
+
+	/**
+	 * @deprecated
 	 * Retrieve the distance of the last fill-up before the given date
 	 * @param date of the latest fill-up
 	 * @return 0 in case of an error
@@ -173,11 +176,12 @@ public class Vehicle implements BaseColumns {
 	}
 	
 	/**
-	 * 
+	 * Call this function to get a cursor for iteration over all fillups of
+	 * this vehicle. The result set is sorted by distance descending
 	 * @return a Cursor to the fillups of this vehicle or null in case of an error
 	 */
 	public Cursor getFillUpsCursor() {
-		return VehicleFillupColumns.getFillUpsOfVehicle(mDBHelper, this);
+		return mDBHelper.queryFillUps(mId, Integer.MAX_VALUE);
 	}
 	
 	/**
@@ -185,19 +189,12 @@ public class Vehicle implements BaseColumns {
 	 * @return the last refuel in time
 	 */
 	public FillUp getLastFillUp() {
-		final String[] args = new String[] { String.valueOf(mId) };
-		final String queryLastFillupId =
-				"SELECT " + FillUp.COLID + ", MAX(" + FillUp.COLDISTANCE + ") " 
-				+ "FROM fillups WHERE "
-				+ FillUp.COLVEHICLE_ID + "=?;";
-
-		FillUp result = null;
-		Cursor c = mDBHelper.protectedRawQuery(queryLastFillupId, args);
-		if (null != c && c.getCount() > 0 && c.getColumnCount() == 2) {
-			long id = c.getLong(c.getColumnIndex(FillUp._ID));
-			result = FillUp.getFillUp(mDBHelper, id);
-		}
-		if(null != c) c.close();
+		Cursor c = mDBHelper.queryFillUps(mId, 1);
+		if(null == c) return null;
+		
+		FillUp result = FillUp.getFillUp(mDBHelper, c);
+		
+		c.close();
 		return result;
 	}
     
@@ -215,7 +212,7 @@ public class Vehicle implements BaseColumns {
 	 * @return sum of liters refueled during the last 'numberOfFillups'
 	 */
 	public float getLiter(int numberOfFillups) {
-		return mDBHelper.queryFillUpSumForLast(FillUp.LITER, mId, numberOfFillups);
+		return mDBHelper.querySumForLast(FillUp.LITER, mId, numberOfFillups);
 	}
 	
 	/**
@@ -225,7 +222,7 @@ public class Vehicle implements BaseColumns {
 	 * @return the number of liter refueled during the interval [start, end]
 	 */
 	public float getLiter(GregorianCalendar start, GregorianCalendar end) {
-		return mDBHelper.queryFillUpSumInTimespan(FillUp.LITER, mId, start, end);
+		return mDBHelper.querySumInTimespan(FillUp.LITER, mId, start, end);
 	}
 	
 	/**
@@ -261,7 +258,7 @@ public class Vehicle implements BaseColumns {
 	 * @return sum of money spend for the last 'numberOfFillups'
 	 */
 	public float getMoney(int numberOfFillups) {
-		return mDBHelper.queryFillUpSumForLast(FillUp.MONEY, mId, numberOfFillups);
+		return mDBHelper.querySumForLast(FillUp.MONEY, mId, numberOfFillups);
 	}
 	
 	/**
@@ -271,7 +268,7 @@ public class Vehicle implements BaseColumns {
 	 * @return sum of money spend in the date interval [start, end]
 	 */
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
-		return mDBHelper.queryFillUpSumInTimespan(FillUp.MONEY, mId, start, end);
+		return mDBHelper.querySumInTimespan(FillUp.MONEY, mId, start, end);
 	}
 	
 	/**
