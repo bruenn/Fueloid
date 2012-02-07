@@ -67,16 +67,13 @@ public class Vehicle implements BaseColumns {
 		result = prime * result + (int) (mId ^ (mId >>> 32));
 		return result;
 	}
-
-
+	
 	/**
 	 * Create a new fill-up for this vehicle
-	 * @param openHelper
-	 * @param vehicleId
-	 * @param distance
-	 * @param date
-	 * @param liter
-	 * @param money
+	 * @param distance for the new fill-up
+	 * @param date of the new fill-up
+	 * @param liter amount of fuel filled up
+	 * @param money amount of money payed at the fill-up
 	 * @return the created fill-up or null if something went wrong
 	 */
 	public FillUp addFillUp(int distance, Date date, float liter, float money) {
@@ -112,18 +109,25 @@ public class Vehicle implements BaseColumns {
 	}
 	
 	/**
-	 * 
-	 * @param numberOfFillups
-	 * @return the overall distance for the number of refuels specified
+	 * Retrieve the distance for the last "numberOfFillups" fill-ups. If there
+	 * are less than "numberOfFillups" recorded for this vehicle, the overall
+	 * recorded distance is returned.
+	 * @param numberOfFillups has to be greater or equal to 1
+	 * @return	the distance for the last "numberOfFillups"
+	 * <br>		the vehicles overall distance if "numberOfFillups" exceed the number
+	 * 			of recorded fill-ups
+	 * <br>		0 in case of an error
 	 */
 	public int getDistance(int numberOfFillups) {
 		return mDBHelper.queryDistanceForLast(mId, numberOfFillups);
 	}
 
 	/**
-	 * Retrieve the distance of the last fill-up before the given date
-	 * @param date of the latest fill-up
-	 * @return 0 in case of an error
+	 * Retrieve the distance in a given time interval
+	 * @param startDate date of the first fill-up in interval
+	 * @param endDate date of the last fill-up in interval
+	 * @return	- the distance between latest fill-up <= startDate and latest fill-up <= endDate
+	 * <br>		- 0 in case of an error
 	 */
 	public int getDistance(GregorianCalendar startDate, GregorianCalendar endDate) {
 		
@@ -137,17 +141,19 @@ public class Vehicle implements BaseColumns {
 	}
 	
 	/**
-	 * Call this function to get a cursor for iteration over all fillups of
-	 * this vehicle. The result set is sorted by distance descending
-	 * @return a Cursor to the fillups of this vehicle or null in case of an error
+	 * Call this method to get a cursor for iteration over all fill-ups of
+	 * this vehicle. The result set is sorted descending by distance
+	 * @return	- a Cursor to the fill-ups of this vehicle
+	 * <br>		- null in case of an error
 	 */
 	public Cursor getFillUpsCursor() {
 		return mDBHelper.queryFillUps(mId, Integer.MAX_VALUE);
 	}
 	
 	/**
-	 * 
-	 * @return the last refuel in time
+	 * Call this method to get the latest fill-up for this vehicle
+	 * @return	- the latest fill-up in time
+	 * <br>		- null in case of an error
 	 */
 	public FillUp getLastFillUp() {
 		Cursor c = mDBHelper.queryFillUps(mId, 1);
@@ -195,19 +201,5 @@ public class Vehicle implements BaseColumns {
 	 */
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
 		return mDBHelper.querySumInTimespan(FillUp.MONEY, mId, start, end);
-	}
-
-	/**
-	 * Remove fill-up from vehicle and database
-	 * @param f fill-up to delete
-	 * @return true if fill-up was deleted from database
-	 */
-	public boolean removeFillUp(FillUp f) {
-		if(null == f) {
-			return false;
-		}
-		
-		f.delete();
-		return true;
 	}
 }

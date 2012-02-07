@@ -107,7 +107,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		final String queryMinMaxDistance = "SELECT MAX(" + FillUp.DISTANCE + ") " +
 			"FROM " + FillUp.TABLE_NAME + " WHERE " +
 			FillUp.COLVEHICLE_ID + "=? AND " +
-			FillUp.COLFILLDATE + "<=?;";
+			FillUp.COLFILLDATE + "<=?";
 		
 		int result = 0;
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
@@ -130,7 +130,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		final String queryMinMaxDistance = "SELECT "+ FillUp.DISTANCE +" FROM " +
 			FillUp.TABLE_NAME + " WHERE " +
 			FillUp.VEHICLE_ID + "=? ORDER BY " +
-			FillUp.DISTANCE + " DESC LIMIT ?;";
+			FillUp.DISTANCE + " DESC LIMIT ?";
 		
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
 		if(null == c || c.getCount() < 2 || c.getColumnCount() != 1) {
@@ -150,7 +150,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		final String queryMinMaxDistance = "SELECT * FROM " +
 			FillUp.TABLE_NAME + " WHERE " +
 			FillUp.VEHICLE_ID + "=? ORDER BY " +
-			FillUp.DISTANCE + " DESC LIMIT ?;";
+			FillUp.DISTANCE + " DESC LIMIT ?";
 		
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getCount() >= 1) {
@@ -170,7 +170,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		final String queryMinMaxDistance = "SELECT "+ columnName +" FROM " +
 			FillUp.TABLE_NAME + " WHERE " +
 			FillUp.VEHICLE_ID + "=? ORDER BY " +
-			FillUp.DISTANCE + " DESC LIMIT ?;";
+			FillUp.DISTANCE + " DESC LIMIT ?";
 		
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
 		if(null == c || c.getCount() < 1 || c.getColumnCount() != 1) {
@@ -192,7 +192,7 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 			"FROM " + FillUp.TABLE_NAME + " WHERE " +
 			FillUp.COLVEHICLE_ID + "=? AND " +
 			FillUp.COLFILLDATE + ">=? AND " +
-			FillUp.COLFILLDATE + "<=?;";
+			FillUp.COLFILLDATE + "<=?";
 		
 		float result = 0f;
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);

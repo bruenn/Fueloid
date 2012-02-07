@@ -88,8 +88,9 @@ public class FillUpList extends ListActivity {
     	switch (item.getItemId()) {
     	case R.id.delete:
     		FillUp f = FillUp.getFillUp(mDBHelper, info.id);
-    		mVehicle.removeFillUp(f);
-    		f.delete();
+    		if(null != f) {
+    			f.delete();
+    		}
     		mFillUpAdapter.changeCursor(mVehicle.getFillUpsCursor());
     		updateText();
     		return true;
