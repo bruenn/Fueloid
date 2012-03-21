@@ -43,6 +43,7 @@ public class FillUp implements BaseColumns {
 	public static final String COLLITER = TABLE_NAME + "." + LITER;
 	public static final String COLMONEY = TABLE_NAME + "." + MONEY;
 	public static final int MAX_DISTANCE = 3000000;// TODO
+	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	
 	public static final String SQL_CREATE_TABLE =
 		"CREATE TABLE " + TABLE_NAME + " ("
@@ -408,7 +409,7 @@ public class FillUp implements BaseColumns {
 	
 	@Override
 	public String toString() {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
 		String result = mDistance + ";" + formatter.format(mFillDate.getTime())
 				+ ";" + mLiter + ";" + mMoney + "\n";		
 		return result;

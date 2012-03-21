@@ -18,8 +18,15 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -81,6 +88,11 @@ public class Vehicle implements BaseColumns {
 		return FillUp.create(mDBHelper, mId, distance, date, liter, money);
 	}
 	
+	/**
+	 * Export all vehicle data into csv file
+	 * @param filename of the target csv file
+	 * @return true if csv, was written with success
+	 */
 	public boolean exportToCsv(String filename) {
 		FileWriter outputFile = null;
 		try {
@@ -207,5 +219,52 @@ public class Vehicle implements BaseColumns {
 	 */
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
 		return mDBHelper.querySumInTimespan(FillUp.MONEY, mId, start, end);
+	}
+
+	/**
+	 * Imports fill-up data from csv file
+	 * @param csvFilename
+	 */
+	public boolean importFromCsv(String csvFilename) {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(csvFilename), "UTF-8"));
+			String nextLine = reader.readLine();
+			assert(Vehicle.CSV_HEADER.equals(nextLine + "\n"));
+			
+			String[] lineColumns = null;
+			SimpleDateFormat df = new SimpleDateFormat(FillUp.DATE_FORMAT);
+			nextLine = reader.readLine();
+			while(null != nextLine) {
+				lineColumns = nextLine.split(";");
+				if(4 != lineColumns.length) {
+					return false;
+				}
+				addFillUp(Integer.parseInt(lineColumns[0]),
+						df.parse(lineColumns[1]),
+						Float.parseFloat(lineColumns[2]),
+						Float.parseFloat(lineColumns[3]));
+				
+				nextLine = reader.readLine();
+			}
+			reader.close();
+			return true;
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+		
 	}
 }
