@@ -18,6 +18,7 @@
 
 package biz.bruenn.fueloid.data;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -403,5 +404,14 @@ public class FillUp implements BaseColumns {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String result = mDistance + ";" + formatter.format(mFillDate.getTime())
+				+ ";" + mLiter + ";" + mMoney + "\n";		
+		return result;
+				
 	}
 }

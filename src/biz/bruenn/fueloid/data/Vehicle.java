@@ -27,6 +27,7 @@ import android.database.Cursor;
 import android.provider.BaseColumns;
 
 public class Vehicle implements BaseColumns {
+	public static final String CSV_HEADER = "DISTANCE;DATE;LITER;MONEY\n";
 	public static final int UNIQUE_VEHICLE_ID = 1; //TODO add support for multiple vehicle
 	public static final String TABLE_NAME = "vehicle";
 	public static final String TITLE = "title";
@@ -80,32 +81,37 @@ public class Vehicle implements BaseColumns {
 		return FillUp.create(mDBHelper, mId, distance, date, liter, money);
 	}
 	
-	//TODO finish implementation
 	public boolean exportToCsv(String filename) {
+		FileWriter outputFile = null;
 		try {
-			FileWriter f = new FileWriter(filename);
-
-			Cursor c = this.getFillUpsCursor();
-			int indexDistance = c.getColumnIndex(FillUp.COLDISTANCE);
-			int indexDate = c.getColumnIndex(FillUp.COLFILLDATE);
-			int indexLiter = c.getColumnIndex(FillUp.COLLITER);
-			int indexMoney = c.getColumnIndex(FillUp.COLMONEY);
+			outputFile = new FileWriter(filename);
+			// write table header
+			outputFile.write(CSV_HEADER);
 			
-			while(!c.isAfterLast()) {
-				f.append(c.getString(indexDistance) + ";"
-						+ c.getString(indexDate) + ";"
-						+ c.getString(indexLiter) + ";"
-						+ c.getString(indexMoney) +"\n");
-				c.moveToNext();
+			/** getFillUpsCursor() returns descending order, but for *.csv we
+			 *  need ascending order -> iterate in reverse
+			 */
+			Cursor c = getFillUpsCursor();
+			c.moveToLast();				
+			while(!c.isBeforeFirst()) {
+				FillUp f = FillUp.getFillUp(mDBHelper, c);
+				if(null != f) {
+					outputFile.write(f.toString());
+				}
+				c.moveToPrevious();
 			}
-			f.close();
+			return true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			return false;
+		} finally {
+			if(null != outputFile) {
+				try {
+					outputFile.close();
+				} catch (IOException e) {
+					//ignore this exception
+				}
+			}
 		}
-		
-		return true;
 	}
 	
 	/**
