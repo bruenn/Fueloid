@@ -30,12 +30,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.provider.BaseColumns;
 
 public class Vehicle implements BaseColumns {
 	public static final String CSV_HEADER = "DISTANCE;DATE;LITER;MONEY\n";
-	public static final int UNIQUE_VEHICLE_ID = 1; //TODO add support for multiple vehicle
 	public static final String TABLE_NAME = "vehicle";
 	public static final String TITLE = "title";
 	public static final String SQL_CREATE_TABLE =
@@ -44,14 +46,109 @@ public class Vehicle implements BaseColumns {
 			+ TITLE +" TEXT);";
 	
 	private FueloidDatabaseHelper mDBHelper;
-	private long mId;
-	
-	public Vehicle(FueloidDatabaseHelper dbHelper, long id) {
-		mDBHelper = dbHelper;
-		mId = id;		
+	public final long mId;
+	private String mTitle;
+
+	public static Vehicle create(FueloidDatabaseHelper openHelper, String title) {
+		SQLiteDatabase db = null;
+		try {
+			db = openHelper.getWritableDatabase();
+			ContentValues values = new ContentValues();
+			values.put(TITLE, title);
+			long id = db.insert(TABLE_NAME, null, values);
+			if(-1 != id) {
+				return new Vehicle(openHelper, id, title);
+			}
+			return null;
+		} catch (SQLiteException e) {
+			return null;
+		} finally {
+			if(null != db) {
+				db.close();
+			}
+		}
 	}
 
-	public void finalize() throws Throwable {
+	public Vehicle(FueloidDatabaseHelper dbHelper, long id) {
+		mDBHelper = dbHelper;
+		mId = id;
+		mTitle = "NONE";
+	}
+
+	public Vehicle(FueloidDatabaseHelper dbHelper, long id, String title) {
+		mDBHelper = dbHelper;
+		mId = id;
+		mTitle = title;
+	}
+
+	public boolean delete() {
+
+		FillUp next = getLastFillUp();
+		while (null != next) {
+			next.delete();
+			next = getLastFillUp();
+		}
+
+		SQLiteDatabase db = null;
+		try {
+			db = mDBHelper.getWritableDatabase();
+			db.delete(Vehicle.TABLE_NAME, Vehicle._ID + "=" + mId, null);
+			return true;
+		} catch (Exception e) {
+			return false;
+		} finally {
+			if(null != db) {
+				db.close();
+			}
+		}
+	}
+
+	/**
+	 * Creates a vehicle object from a database cursor
+	 * @param context current context
+	 * @param cursor cursor to a database fill-up column
+	 * @return vehicle object representation or null if cursor was flawed
+	 */
+	static Vehicle get(FueloidDatabaseHelper openHelper, Cursor cursor) {
+		if((null != cursor) && (cursor.getCount() > 0) && (cursor.getColumnCount() == 2)) {
+			try {
+				long id = cursor.getLong(cursor.getColumnIndexOrThrow(_ID));
+				String title = cursor.getString(cursor.getColumnIndexOrThrow(TITLE));
+				return new Vehicle(openHelper, id, title);
+			} catch (IllegalArgumentException e) {
+				return null;
+			} finally {
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Read Vehicle from database
+	 * @param id
+	 * @return Vehicle object from database or null if <id> was not found
+	 */
+	public static Vehicle get(FueloidDatabaseHelper openHelper, long id) {
+		SQLiteDatabase db = null;
+		Cursor c = null;
+		try {
+			db = openHelper.getReadableDatabase();
+			c = db.query(Vehicle.TABLE_NAME, new String[] {Vehicle._ID, Vehicle.TITLE}, Vehicle._ID + "=" + id, null, null, null, null);
+			if(null != c && c.moveToFirst())
+			{
+				return get(openHelper, c);
+			}
+			return null;
+		} catch (Exception e) {
+			return null;
+		} finally {
+			if(null != db) {
+				db.close();
+			}
+			if(null != c) {
+				c.close();
+			}
+		}
 	}
 
 	@Override

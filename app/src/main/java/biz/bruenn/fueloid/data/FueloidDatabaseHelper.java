@@ -144,20 +144,33 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		c.close();
 		return distance;
 	}
-    
+
 	public Cursor queryFillUps(long vehicleId, int numFillups) {
-		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};		
+		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(numFillups)};
 		final String queryMinMaxDistance = "SELECT * FROM " +
-			FillUp.TABLE_NAME + " WHERE " +
-			FillUp.VEHICLE_ID + "=? ORDER BY " +
-			FillUp.DISTANCE + " DESC LIMIT ?";
-		
+				FillUp.TABLE_NAME + " WHERE " +
+				FillUp.VEHICLE_ID + "=? ORDER BY " +
+				FillUp.DISTANCE + " DESC LIMIT ?";
+
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
 		if(null != c && c.getCount() >= 1) {
 			c.moveToFirst();
 			return c;
 		}
-		
+
+		if(null != c) c.close();
+		return null;
+	}
+
+	public Cursor queryVehicles() {
+		final String queryMinMaxDistance = "SELECT * FROM " + Vehicle.TABLE_NAME;
+
+		Cursor c = protectedRawQuery(queryMinMaxDistance, null);
+		if(null != c && c.getCount() >= 1) {
+			c.moveToFirst();
+			return c;
+		}
+
 		if(null != c) c.close();
 		return null;
 	}

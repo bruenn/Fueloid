@@ -55,7 +55,7 @@ public class FillUpList extends ListActivity {
         setContentView(R.layout.main);
 
         mDBHelper = new FueloidDatabaseHelper(this);
-        mVehicle = new Vehicle(mDBHelper, Vehicle.UNIQUE_VEHICLE_ID);
+        mVehicle = new Vehicle(mDBHelper, getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
         
         TextView addButton = (TextView)findViewById(R.id.addRefuel);
         addButton.setOnClickListener(mOnClickListener);
@@ -104,6 +104,7 @@ public class FillUpList extends ListActivity {
 		switch (item.getItemId()) {
 		case R.id.statistics:
 			Intent i = new Intent(this, StatisticList.class);
+			i.putExtra(Vehicle.TABLE_NAME, this.mVehicle.mId);
 			startActivityForResult(i, 0);
 			return true;
 		default:
