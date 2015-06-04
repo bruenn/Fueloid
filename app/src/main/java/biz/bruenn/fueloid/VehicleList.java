@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,15 +35,6 @@ public class VehicleList extends ListActivity {
 
 		mDBHelper = new FueloidDatabaseHelper(this);
 
-
-		TextView addButton = (TextView)findViewById(R.id.addVehicle);
-		addButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Vehicle.create(mDBHelper, "BlaBla");
-			}
-		});
-
 		mVehicleAdapter = new VehicleAdapter(this, mDBHelper.queryVehicles());
 		setListAdapter(mVehicleAdapter);
 		getListView().setOnItemClickListener(new VehicleListOnItemClickListener());
@@ -66,6 +59,24 @@ public class VehicleList extends ListActivity {
 				title.setText(cursor.getString(cursor.getColumnIndex(Vehicle.TITLE))
 				+ cursor.getLong(cursor.getColumnIndex(Vehicle._ID)));
 			}
+		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.menu_vehicle, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_add:
+				Vehicle.create(mDBHelper, "Unnamed");
+				mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 

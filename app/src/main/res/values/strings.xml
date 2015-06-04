@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">WTF!-9</string>
     <string name="app_name">Fueloid</string>
+    <string name="action_add">Add</string>
     <string name="large_text_size">48sp</string>
 </resources>
