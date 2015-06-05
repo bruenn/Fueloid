@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="biz.bruenn.fueloid"
-    android:versionCode="1"
-    android:versionName="0.1" >
+    android:versionCode="2"
+    android:versionName="0.2" >
+    <uses-sdk android:minSdkVersion="11"/>
 
     <application
         android:icon="@drawable/gaspump"
@@ -25,12 +26,18 @@
             android:label="@string/title_activity_import_vehicle" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:mimeType="text/csv" />
                 <data android:pathPattern=".*" />
                 <data android:host="*" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".VehicleSettings"
+            android:label="@string/title_activity_vehicle_settings" >
         </activity>
     </application>
 

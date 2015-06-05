@@ -57,8 +57,7 @@ public class VehicleList extends ListActivity {
 		public void bindView(View view, Context context, Cursor cursor) {
 			TextView title = (TextView) view.findViewById(R.id.title);
 			if(null != title) {
-				title.setText(cursor.getString(cursor.getColumnIndex(Vehicle.TITLE))
-				+ cursor.getLong(cursor.getColumnIndex(Vehicle._ID)));
+				title.setText(cursor.getString(cursor.getColumnIndex(Vehicle.TITLE)));
 			}
 		}
 	}
@@ -74,7 +73,7 @@ public class VehicleList extends ListActivity {
 		switch (item.getItemId()) {
 			case R.id.action_add:
 				Vehicle.create(mDBHelper, getString(R.string.new_vehicle));
-				mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
+				updateView();
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -96,11 +95,21 @@ public class VehicleList extends ListActivity {
 				if(null != v) {
 					v.delete();
 				}
-				mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
+				updateView();
 				return true;
 			default:
 				return super.onContextItemSelected(item);
 		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		updateView();
+	}
+
+	private void updateView() {
+		mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
 	}
 
 	private class VehicleListOnItemClickListener implements AdapterView.OnItemClickListener {

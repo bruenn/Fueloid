@@ -102,11 +102,10 @@ public class FillUpList extends ListActivity {
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.action_settings:
+			return runActivity(VehicleSettings.class);
 		case R.id.statistics:
-			Intent i = new Intent(this, StatisticList.class);
-			i.putExtra(Vehicle.TABLE_NAME, this.mVehicle.mId);
-			startActivityForResult(i, 0);
-			return true;
+			return runActivity(StatisticList.class);
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -114,7 +113,7 @@ public class FillUpList extends ListActivity {
     
     @Override
     public void onResume() {
-    	super.onResume();    	
+    	super.onResume();
     	updateText();
     }
     
@@ -131,6 +130,13 @@ public class FillUpList extends ListActivity {
     					+ liter + "l|"
     					+ liter/distance + "l/km|"
     					+ money/liter + "€/l");
+	}
+
+	private boolean runActivity(java.lang.Class<?> cls) {
+		Intent i = new Intent(this, cls);
+		i.putExtra(Vehicle.TABLE_NAME, this.mVehicle.mId);
+		startActivityForResult(i, 0);
+		return true;
 	}
 
 	private class FillUpAdapter extends CursorAdapter {
@@ -172,7 +178,7 @@ public class FillUpList extends ListActivity {
 		Intent i = new Intent(v.getContext(), EditFillUp.class);
 		i.putExtra(FillUp.TABLE_NAME, newFillUp.getmId());
 		startActivityForResult(i, 0);
-    	}
+		}
 	};
     
     private class FillUpListOnItemClickListener implements OnItemClickListener {

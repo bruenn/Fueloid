@@ -82,6 +82,12 @@ public class Vehicle implements BaseColumns {
 		mTitle = title;
 	}
 
+	public void update() {
+		ContentValues values = new ContentValues();
+		values.put(Vehicle.TITLE, getName());
+		mDBHelper.update(Vehicle.TABLE_NAME, values, Vehicle._ID + "=" + mId, null);
+	}
+
 	public boolean delete() {
 
 		FillUp next = getLastFillUp();
@@ -317,6 +323,15 @@ public class Vehicle implements BaseColumns {
 	 */
 	public float getMoney(GregorianCalendar start, GregorianCalendar end) {
 		return mDBHelper.querySumInTimespan(FillUp.MONEY, mId, start, end);
+	}
+
+	public String getName() {
+		return mTitle;
+	}
+
+	public void setName(String name) {
+		mTitle = name;
+		update();
 	}
 
 	/**

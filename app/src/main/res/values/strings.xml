@@ -10,5 +10,7 @@
     <string name="title_activity_import_vehicle">Import vehicle to fueloid</string>
     <string name="action_settings">Settings</string>
     <string name="new_vehicle">unnamed</string>
+    <string name="title_activity_vehicle_settings">Vehicle settings</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
