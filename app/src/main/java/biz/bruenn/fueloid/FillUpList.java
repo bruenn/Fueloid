@@ -38,7 +38,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
-import biz.bruenn.fueloid.EditFillUp;
+
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
 import biz.bruenn.fueloid.data.Vehicle;
@@ -56,14 +56,11 @@ public class FillUpList extends ListActivity {
 
         mDBHelper = new FueloidDatabaseHelper(this);
         mVehicle = new Vehicle(mDBHelper, getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
-        
-        TextView addButton = (TextView)findViewById(R.id.addRefuel);
-        addButton.setOnClickListener(mOnClickListener);
 	   
         mFillUpAdapter = new FillUpAdapter(this, mVehicle.getFillUpsCursor());
 	    
-	    this.setListAdapter(mFillUpAdapter);
-	    this.getListView().setOnItemClickListener(new FillUpListOnItemClickListener());
+	    setListAdapter(mFillUpAdapter);
+	    getListView().setOnItemClickListener(new FillUpListOnItemClickListener());
 	    registerForContextMenu(getListView());
     }
     
@@ -102,12 +99,14 @@ public class FillUpList extends ListActivity {
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.action_settings:
-			return runActivity(VehicleSettings.class);
-		case R.id.statistics:
-			return runActivity(StatisticList.class);
-		default:
-			return super.onOptionsItemSelected(item);
+			case R.id.action_add:
+				return addFillUp();
+			case R.id.action_settings:
+				return runVehicleActivity(VehicleSettings.class);
+			case R.id.statistics:
+				return runVehicleActivity(StatisticList.class);
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
     
@@ -132,11 +131,19 @@ public class FillUpList extends ListActivity {
     					+ money/liter + "€/l");
 	}
 
-	private boolean runActivity(java.lang.Class<?> cls) {
+	private boolean runActivity(java.lang.Class<?> cls, String extra, long id) {
 		Intent i = new Intent(this, cls);
-		i.putExtra(Vehicle.TABLE_NAME, this.mVehicle.mId);
+		i.putExtra(extra, id);
 		startActivityForResult(i, 0);
 		return true;
+	}
+
+	private boolean runFillUpActivity(long id) {
+		return runActivity(EditFillUp.class, FillUp.TABLE_NAME, id);
+	}
+
+	private boolean runVehicleActivity(java.lang.Class<?> cls) {
+		return runActivity(cls, Vehicle.TABLE_NAME, mVehicle.mId);
 	}
 
 	private class FillUpAdapter extends CursorAdapter {
@@ -147,10 +154,10 @@ public class FillUpList extends ListActivity {
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			TextView titel = (TextView) view.findViewById(R.id.title);
-			if(null != titel) {
-				titel.setText(DateFormat.getDateInstance().format(cursor.getLong(cursor.getColumnIndex(FillUp.FILLDATE)))
-							+ " | " + cursor.getInt(cursor.getColumnIndex(FillUp.DISTANCE)) + "km");
+			TextView title = (TextView) view.findViewById(R.id.title);
+			if(null != title) {
+				title.setText(DateFormat.getDateInstance().format(cursor.getLong(cursor.getColumnIndex(FillUp.FILLDATE)))
+						+ " | " + cursor.getInt(cursor.getColumnIndex(FillUp.DISTANCE)) + "km");
 			}
 			TextView text  = (TextView) view.findViewById(R.id.text);
 			if(null != text) {
@@ -164,31 +171,20 @@ public class FillUpList extends ListActivity {
 			return view;
 		}
     }
-    
-    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
-    	@Override
-		public void onClick(View v) {
-    	FillUp lastFillUp = mVehicle.getLastFillUp();
-    	FillUp newFillUp = null;
-    	if(null != lastFillUp) {
-    		newFillUp = mVehicle.addFillUp(lastFillUp.getmDistance() + 1, new Date(), lastFillUp.getmLiter(), lastFillUp.getmMoney());
-    	} else {
-    		newFillUp = mVehicle.addFillUp(0, new Date(), 0f, 0f);
-    	}
-		Intent i = new Intent(v.getContext(), EditFillUp.class);
-		i.putExtra(FillUp.TABLE_NAME, newFillUp.getmId());
-		startActivityForResult(i, 0);
+
+	private boolean addFillUp() {
+		final FillUp newFillUp = mVehicle.addFillUp();
+		if (null != newFillUp) {
+			return runFillUpActivity(newFillUp.getmId());
 		}
-	};
+		return false;
+	}
     
     private class FillUpListOnItemClickListener implements OnItemClickListener {
     	@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     		Cursor c = ((FillUpAdapter)parent.getAdapter()).getCursor();
-    		
-    		Intent i = new Intent(view.getContext(), EditFillUp.class);
-			i.putExtra(FillUp.TABLE_NAME, c.getLong(c.getColumnIndex(FillUp._ID)));
-			startActivityForResult(i, 0);			
+			runFillUpActivity(c.getLong(c.getColumnIndex(FillUp._ID)));
 		}    	
     }
 }

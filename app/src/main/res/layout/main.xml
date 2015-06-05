@@ -9,14 +9,6 @@
 	    android:layout_height="wrap_content" 
 	    android:text="OverallDistance"
     />
-    <TextView
-		android:id="@+id/addRefuel"
-	    android:layout_width="fill_parent" 
-	    android:layout_height="wrap_content"
-	    android:gravity="center_horizontal" 
-	    android:text="Add refuel"
-	    android:textSize="24sp"
-    />
     <ListView
 	    android:id="@+id/android:list"
 	    android:layout_width="fill_parent"

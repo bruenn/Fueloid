@@ -191,6 +191,14 @@ public class Vehicle implements BaseColumns {
 	public FillUp addFillUp(int distance, Date date, float liter, float money) {
 		return FillUp.create(mDBHelper, mId, distance, date, liter, money);
 	}
+
+	public FillUp addFillUp() {
+		final FillUp last = getLastFillUp();
+		if(null == last) {
+			return addFillUp(0, new Date(), 0f, 0f);
+		}
+		return addFillUp(last.getmDistance() + 1, new Date(), last.getmLiter(), last.getmMoney());
+	}
 	
 	/**
 	 * Export all vehicle data into csv file
