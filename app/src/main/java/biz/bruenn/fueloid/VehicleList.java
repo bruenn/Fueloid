@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -72,7 +73,7 @@ public class VehicleList extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.action_add:
-				Vehicle.create(mDBHelper, "Unnamed");
+				Vehicle.create(mDBHelper, getString(R.string.new_vehicle));
 				mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
 				return true;
 			default:
@@ -83,7 +84,6 @@ public class VehicleList extends ListActivity {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-
 		getMenuInflater().inflate(R.menu.menu_fillup, menu);
 	}
 

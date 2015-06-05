@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Fueloid</string>
+    <string name="action_accept">Save</string>
     <string name="action_add">Add</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="vehicle_name">Vehicle name</string>
     <string name="large_text_size">48sp</string>
+    <string name="title_activity_import_vehicle">Import vehicle to fueloid</string>
+    <string name="action_settings">Settings</string>
+    <string name="new_vehicle">unnamed</string>
+
 </resources>

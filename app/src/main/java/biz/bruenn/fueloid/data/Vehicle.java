@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -323,17 +324,32 @@ public class Vehicle implements BaseColumns {
 	 * @param csvFilename
 	 */
 	public boolean importFromCsv(String csvFilename) {
+		boolean result = false;
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(csvFilename), "UTF-8"));
+			FileInputStream fis = new FileInputStream(csvFilename);
+			result = importFromCsv(fis);
+			fis.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			return result;
+		}
+	}
+
+	public boolean importFromCsv(InputStream is) {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 			String nextLine = reader.readLine();
-			assert(Vehicle.CSV_HEADER.equals(nextLine + "\n"));
+			//TODO assert(Vehicle.CSV_HEADER.equals(nextLine + "\n"));
 			
 			String[] lineColumns = null;
 			SimpleDateFormat df = new SimpleDateFormat(FillUp.DATE_FORMAT);
 			nextLine = reader.readLine();
 			while(null != nextLine) {
 				lineColumns = nextLine.split(";");
-				if(4 != lineColumns.length) {
+				if(4 > lineColumns.length) {
 					return false;
 				}
 				addFillUp(Integer.parseInt(lineColumns[0]),
@@ -362,6 +378,5 @@ public class Vehicle implements BaseColumns {
 			e.printStackTrace();
 		}
 		return false;
-		
 	}
 }

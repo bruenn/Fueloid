@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import android.database.Cursor;
+import android.os.Environment;
 import android.test.AndroidTestCase;
 import biz.bruenn.fueloid.data.FillUp;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
@@ -45,8 +46,9 @@ public class VehicleTest extends AndroidTestCase {
 	static final int LAST_DISTANCE = 100;
 	static final float LAST_LITER = 10f;
 	static final float LAST_MONEY = 14.96f;
-	static final String CSV_EXPORT_FILE = "/sdcard/export.csv";
-	static final String CSV_IMPORT_FILE = "/sdcard/import.csv";
+	static final String SD_CARD_PATH = Environment.getExternalStorageDirectory().getPath();
+	static final String CSV_EXPORT_FILE = SD_CARD_PATH + "/export.csv";
+	static final String CSV_IMPORT_FILE = SD_CARD_PATH + "/import.csv";
 	
 	private Vehicle mVehicle;
 
