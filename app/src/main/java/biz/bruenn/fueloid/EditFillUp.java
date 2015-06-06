@@ -19,11 +19,11 @@
 package biz.bruenn.fueloid;
 
 import biz.bruenn.fueloid.common.DatePickerFragement;
+import biz.bruenn.fueloid.common.TimePickerFragment;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,7 +34,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 public class EditFillUp extends Activity {
-	protected static final int TIME_PICKER_DIALOG = 4;
 	private FueloidDatabaseHelper mDBHelper;
 	private FillUp mFillUp;
 	private TextView mDate;
@@ -87,15 +86,6 @@ public class EditFillUp extends Activity {
     }
     
     @Override
-    protected Dialog onCreateDialog(int id, Bundle args) {
-    	switch(id) {
-    	case TIME_PICKER_DIALOG:
-    		return new TimePickerDialog(this, mTimeSetListener, mFillUp.getDateHours(), mFillUp.getDateMinutes(), true);
-    	}
-    	return null;
-    }
-    
-    @Override
     protected void onPause() {
     	super.onPause();
     	mFillUp.update();
@@ -145,7 +135,10 @@ public class EditFillUp extends Activity {
 				showDialog("Money", String.valueOf(mFillUp.getmMoney()), InputType.TYPE_NUMBER_FLAG_DECIMAL, mMoneyListener);
 				break;
 			case R.id.fillupTime:
-				showDialog(TIME_PICKER_DIALOG);
+				TimePickerFragment timePicker = new TimePickerFragment();
+				timePicker.setListener(mTimeSetListener);
+				timePicker.setDate(mFillUp.getDate());
+				timePicker.show(getFragmentManager(), "timePicker");
 				break;
 			}
 		}
@@ -157,7 +150,7 @@ public class EditFillUp extends Activity {
 		public void onDateSet(DatePicker view, int year, int monthOfYear,
 				int dayOfMonth) {
 			mFillUp.setDate(year, monthOfYear, dayOfMonth);
-			mDate.setText(mFillUp.getDateYear() + "-" + (mFillUp.getDateMonth()+1) + "-" + mFillUp.getDateDay());
+			mDate.setText(String.format("%04d-%02d-%02d", year, monthOfYear + 1, dayOfMonth));
 		}
 	};
 
@@ -190,12 +183,7 @@ public class EditFillUp extends Activity {
 		@Override
 		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 			mFillUp.setTime(hourOfDay, minute);
-			
-			if(minute < 10) {
-				mTime.setText(hourOfDay + ":0" + minute);
-			} else {
-				mTime.setText(hourOfDay + ":" + minute);
-			}
+			mTime.setText(String.format("%02d:%02d", hourOfDay, minute));
 		}
 	};
 }
