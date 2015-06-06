@@ -11,13 +11,11 @@ public class TimePickerFragment extends DialogFragment {
 	private TimePickerDialog.OnTimeSetListener mListener = null;
 	private Calendar mCalendar = Calendar.getInstance();
 
-	public void setDate(final Calendar calendar) {
+	public void setArguments(Calendar calendar, TimePickerDialog.OnTimeSetListener listener) {
 		mCalendar = calendar;
-	}
-
-	public void setListener(TimePickerDialog.OnTimeSetListener listener) {
 		mListener = listener;
 	}
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstance) {
 		final int hour = mCalendar.get(Calendar.HOUR_OF_DAY);

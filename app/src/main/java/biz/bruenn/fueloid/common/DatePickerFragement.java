@@ -13,11 +13,8 @@ public class DatePickerFragement extends DialogFragment {
 	private DatePickerDialog.OnDateSetListener mListener = null;
 	private Calendar mCalendar = Calendar.getInstance();
 
-	public void setDate(final Calendar calendar) {
+	public void setArguments(Calendar calendar, DatePickerDialog.OnDateSetListener listener) {
 		mCalendar = calendar;
-	}
-
-	public void setListener(DatePickerDialog.OnDateSetListener listener) {
 		mListener = listener;
 	}
 	@Override

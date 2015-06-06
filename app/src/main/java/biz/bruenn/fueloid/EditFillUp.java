@@ -60,29 +60,19 @@ public class EditFillUp extends Activity {
         setContentView(R.layout.edit_fillup);
         
         mDate = (TextView)findViewById(R.id.fillupDate);
-        if(null != mDate) {
-        	mDate.setOnClickListener(mOnClickListener);	
-        }
+        mDate.setOnClickListener(mOnClickListener);
         
         mDistance = (TextView)findViewById(R.id.fillupDistance);
-        if(null != mDistance) {
-        	mDistance.setOnClickListener(mOnClickListener);
-        }
+        mDistance.setOnClickListener(mOnClickListener);
         
         mLiter = (TextView)findViewById(R.id.fillupLiter);
-        if(null != mLiter) {
-        	mLiter.setOnClickListener(mOnClickListener);
-        }
+        mLiter.setOnClickListener(mOnClickListener);
         
         mMoney = (TextView)findViewById(R.id.fillupMoney);
-        if(null != mMoney) {
-        	mMoney.setOnClickListener(mOnClickListener);
-        }
+        mMoney.setOnClickListener(mOnClickListener);
         
         mTime = (TextView)findViewById(R.id.fillupTime);
-        if(null != mTime) {
-        	mTime.setOnClickListener(mOnClickListener);
-        }
+        mTime.setOnClickListener(mOnClickListener);
     }
     
     @Override
@@ -103,15 +93,19 @@ public class EditFillUp extends Activity {
 		mMoneyListener.valueChanged(String.valueOf(mFillUp.getmMoney()));
     }
 
-	private void showDialog(String title, String value, int input, SetValueDialog.OnValueChangedListener listener) {
+	private <T> void showDialog(String title, T value, SetValueDialog.OnValueChangedListener listener, int input) {
 		SetValueDialog d = new SetValueDialog();
 		d.setListener(listener);
 		Bundle args = new Bundle();
 		args.putString("TITLE", title);
-		args.putString("VALUE", value);
+		args.putString("VALUE", String.valueOf(value));
 		args.putInt("INPUT_TYPE", input);
 		d.setArguments(args);
 		d.show(getFragmentManager(), title);
+	}
+
+	private <T> void showDialog(String title, T value, SetValueDialog.OnValueChangedListener listener) {
+		showDialog(title, value, listener, InputType.TYPE_NUMBER_FLAG_DECIMAL);
 	}
     
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -120,24 +114,22 @@ public class EditFillUp extends Activity {
 		public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.fillupDate:
-				DatePickerFragement d = new DatePickerFragement();
-				d.setListener(mDateSetListener);
-				d.setDate(mFillUp.getDate());
-				d.show(getFragmentManager(), "datePicker");
+				DatePickerFragement datePicker = new DatePickerFragement();
+				datePicker.setArguments(mFillUp.getDate(), mDateSetListener);
+				datePicker.show(getFragmentManager(), "datePicker");
 				break;
 			case R.id.fillupDistance:
-				showDialog("Distance", String.valueOf(mFillUp.getmDistance()), 0, mDistanceListener);
+				showDialog("Distance", mFillUp.getmDistance(), mDistanceListener, 0);
 				break;
 			case R.id.fillupLiter:
-				showDialog("Liter", String.valueOf(mFillUp.getmLiter()), InputType.TYPE_NUMBER_FLAG_DECIMAL, mLiterListener);
+				showDialog("Liter", mFillUp.getmLiter(), mLiterListener);
 				break;
 			case R.id.fillupMoney:
-				showDialog("Money", String.valueOf(mFillUp.getmMoney()), InputType.TYPE_NUMBER_FLAG_DECIMAL, mMoneyListener);
+				showDialog("Money", mFillUp.getmMoney(), mMoneyListener);
 				break;
 			case R.id.fillupTime:
 				TimePickerFragment timePicker = new TimePickerFragment();
-				timePicker.setListener(mTimeSetListener);
-				timePicker.setDate(mFillUp.getDate());
+				timePicker.setArguments(mFillUp.getDate(), mTimeSetListener);
 				timePicker.show(getFragmentManager(), "timePicker");
 				break;
 			}
