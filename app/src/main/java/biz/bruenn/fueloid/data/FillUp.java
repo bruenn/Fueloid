@@ -19,6 +19,7 @@
 package biz.bruenn.fueloid.data;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -140,6 +141,10 @@ public class FillUp implements BaseColumns {
 		} catch (IllegalArgumentException e) {
 			return 0;
 		}
+	}
+
+	public final Calendar getDate() {
+		return mFillDate;
 	}
 	
 	public final int getDateDay() {

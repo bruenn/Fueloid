@@ -18,6 +18,7 @@
 
 package biz.bruenn.fueloid;
 
+import biz.bruenn.fueloid.common.DatePickerFragement;
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.FillUp;
 import android.app.Activity;
@@ -33,7 +34,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 public class EditFillUp extends Activity {
-	protected static final int DATE_PICKER_DIALOG = 0;
 	protected static final int TIME_PICKER_DIALOG = 4;
 	private FueloidDatabaseHelper mDBHelper;
 	private FillUp mFillUp;
@@ -42,30 +42,6 @@ public class EditFillUp extends Activity {
 	private TextView mLiter;
 	private TextView mMoney;
 	private TextView mTime;
-
-	protected SetValueDialog.OnValueChangedListener mDistanceListener = new SetValueDialog.OnValueChangedListener() {
-		@Override
-		public void valueChanged(String newVal) {
-			mFillUp.setmDistance(Integer.valueOf(newVal));
-			mDistance.setText(newVal + " km");
-		}
-	};
-
-	protected SetValueDialog.OnValueChangedListener mLiterListener = new SetValueDialog.OnValueChangedListener() {
-		@Override
-		public void valueChanged(String newVal) {
-			mFillUp.setmLiter(Float.valueOf(newVal));
-			mLiter.setText(newVal + " l");
-		}
-	};
-
-	protected SetValueDialog.OnValueChangedListener mMoneyListener = new SetValueDialog.OnValueChangedListener() {
-		@Override
-		public void valueChanged(String newVal) {
-			mFillUp.setmMoney(Float.valueOf(newVal));
-			mMoney.setText(newVal + " €");
-		}
-	};
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,8 +89,6 @@ public class EditFillUp extends Activity {
     @Override
     protected Dialog onCreateDialog(int id, Bundle args) {
     	switch(id) {
-    	case DATE_PICKER_DIALOG:
-    		return new DatePickerDialog(this, mDateSetListener, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
     	case TIME_PICKER_DIALOG:
     		return new TimePickerDialog(this, mTimeSetListener, mFillUp.getDateHours(), mFillUp.getDateMinutes(), true);
     	}
@@ -126,19 +100,6 @@ public class EditFillUp extends Activity {
     	super.onPause();
     	mFillUp.update();
     }
-    
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
-    	super.onPrepareDialog(id, dialog, args);
-    	
-    	if(null != dialog) {
-    		switch(id) {
-	    	case DATE_PICKER_DIALOG:
-	    		((DatePickerDialog)dialog).onDateChanged(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
-	    		break;
-	    	}
-    	}
-    }    
     
     @Override
     public void onResume() {
@@ -169,7 +130,10 @@ public class EditFillUp extends Activity {
 		public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.fillupDate:
-				showDialog(DATE_PICKER_DIALOG);
+				DatePickerFragement d = new DatePickerFragement();
+				d.setListener(mDateSetListener);
+				d.setDate(mFillUp.getDate());
+				d.show(getFragmentManager(), "datePicker");
 				break;
 			case R.id.fillupDistance:
 				showDialog("Distance", String.valueOf(mFillUp.getmDistance()), 0, mDistanceListener);
@@ -194,6 +158,30 @@ public class EditFillUp extends Activity {
 				int dayOfMonth) {
 			mFillUp.setDate(year, monthOfYear, dayOfMonth);
 			mDate.setText(mFillUp.getDateYear() + "-" + (mFillUp.getDateMonth()+1) + "-" + mFillUp.getDateDay());
+		}
+	};
+
+	private SetValueDialog.OnValueChangedListener mDistanceListener = new SetValueDialog.OnValueChangedListener() {
+		@Override
+		public void valueChanged(String newVal) {
+			mFillUp.setmDistance(Integer.valueOf(newVal));
+			mDistance.setText(newVal + " km");
+		}
+	};
+
+	private SetValueDialog.OnValueChangedListener mLiterListener = new SetValueDialog.OnValueChangedListener() {
+		@Override
+		public void valueChanged(String newVal) {
+			mFillUp.setmLiter(Float.valueOf(newVal));
+			mLiter.setText(newVal + " l");
+		}
+	};
+
+	private SetValueDialog.OnValueChangedListener mMoneyListener = new SetValueDialog.OnValueChangedListener() {
+		@Override
+		public void valueChanged(String newVal) {
+			mFillUp.setmMoney(Float.valueOf(newVal));
+			mMoney.setText(newVal + " €");
 		}
 	};
 	
