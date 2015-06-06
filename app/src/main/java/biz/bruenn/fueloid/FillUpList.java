@@ -19,7 +19,6 @@
 package biz.bruenn.fueloid;
 
 import java.text.DateFormat;
-import java.util.Date;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -88,8 +87,7 @@ public class FillUpList extends ListActivity {
     		if(null != f) {
     			f.delete();
     		}
-    		mFillUpAdapter.changeCursor(mVehicle.getFillUpsCursor());
-    		updateText();
+    		updateView();
     		return true;
     	default:
     		return super.onContextItemSelected(item);
@@ -113,12 +111,11 @@ public class FillUpList extends ListActivity {
     @Override
     public void onResume() {
     	super.onResume();
-    	updateText();
+    	updateView();
     }
     
-    private void updateText() {
-    	//reread fillup list from database, by updating the list adapters cursor
-    	((FillUpAdapter)this.getListAdapter()).changeCursor(mVehicle.getFillUpsCursor());
+    private void updateView() {
+		mFillUpAdapter.changeCursor(mVehicle.getFillUpsCursor());
     	TextView mDistance = (TextView)this.findViewById(R.id.vehicleDistance);
     	//TODO use a statistic object here
     	int distance = mVehicle.getDistance(1);
