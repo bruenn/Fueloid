@@ -24,6 +24,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -63,6 +64,8 @@ public class SetValueDialog extends DialogFragment {
 		getDialog().setTitle(args.getString("TITLE", "unknown"));
 		value.setText(args.getString("VALUE", ""));
 		value.setInputType(InputType.TYPE_CLASS_NUMBER | args.getInt("INPUT_TYPE", 0));
+		value.selectAll();
+		getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 		return v;
 	}
 }
