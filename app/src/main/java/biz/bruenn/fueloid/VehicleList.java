@@ -1,3 +1,21 @@
+/**
+ Copyright (C) 2011-2015 Patrick Brünn.
+
+ This file is part of Fueloid.
+
+ Fueloid is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Fueloid is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Fueloid.  If not, see <http://www.gnu.org/licenses/>. */
+
 package biz.bruenn.fueloid;
 
 import android.app.ListActivity;
@@ -86,12 +104,9 @@ public class VehicleList extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			Cursor c = ((VehicleAdapter)parent.getAdapter()).getCursor();
-
 			Intent i = new Intent(view.getContext(), FillUpList.class);
 			i.putExtra(Vehicle.TABLE_NAME, c.getLong(c.getColumnIndex(Vehicle._ID)));
 			startActivityForResult(i, 0);
-
 		}
 	}
-
 }
