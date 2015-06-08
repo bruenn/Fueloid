@@ -19,13 +19,8 @@
 package biz.bruenn.fueloid;
 
 import android.app.ListActivity;
-import android.content.Context;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
 import biz.bruenn.fueloid.data.Statistic;
 import biz.bruenn.fueloid.data.Vehicle;
@@ -33,39 +28,16 @@ import biz.bruenn.fueloid.data.Vehicle;
 public class StatisticList extends ListActivity {
 	StatisticAdapter mStatisticAdapter;
 	Vehicle mVehicle;
-	
-    /** Called when the activity is first created. */
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.statistic_list);
         mVehicle = Vehicle.get(new FueloidDatabaseHelper(this), getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
         Statistic[] statistics = Statistic.getStatistics(mVehicle);
-        mStatisticAdapter = new StatisticAdapter(this, R.layout.statistic_list_item, statistics);
+        mStatisticAdapter = new StatisticAdapter(this, R.layout.icon_list_item, statistics);
 	    
 	    this.setListAdapter(mStatisticAdapter);
 	}
 
-	private class StatisticAdapter extends ArrayAdapter<Statistic> {
-
-		public StatisticAdapter(Context context, int textViewResourceId, Statistic[] statistics) {
-			super(context, textViewResourceId, statistics);
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View view = LayoutInflater.from(getContext()).inflate(R.layout.statistic_list_item, parent, false);
-			
-			Statistic item = getItem(position);
-			TextView title = (TextView) view.findViewById(R.id.title);
-			if(null != title) {
-				title.setText(item.getTitle());
-			}
-			TextView text  = (TextView) view.findViewById(R.id.text);
-			if(null != text) {
-				text.setText(item.getDistance() + "km | " + item.getLiter() + "l | " + item.getMoney() + "€");
-			}
-			return view;
-		}
-    }
 }

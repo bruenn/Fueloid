@@ -18,24 +18,18 @@
 
 package biz.bruenn.fueloid;
 
-import java.text.DateFormat;
-
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
@@ -145,32 +139,6 @@ public class FillUpList extends ListActivity {
 	private boolean runVehicleActivity(java.lang.Class<?> cls) {
 		return runActivity(cls, Vehicle.TABLE_NAME, mVehicle.mId);
 	}
-
-	private class FillUpAdapter extends CursorAdapter {
-
-		public FillUpAdapter(Context context, Cursor c) {
-			super(context, c, true);
-		}
-
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			TextView title = (TextView) view.findViewById(R.id.title);
-			if(null != title) {
-				title.setText(DateFormat.getDateInstance().format(cursor.getLong(cursor.getColumnIndex(FillUp.FILLDATE)))
-						+ " | " + cursor.getInt(cursor.getColumnIndex(FillUp.DISTANCE)) + "km");
-			}
-			TextView text  = (TextView) view.findViewById(R.id.text);
-			if(null != text) {
-				text.setText(cursor.getFloat(cursor.getColumnIndex(FillUp.LITER)) + "l; " + cursor.getFloat(cursor.getColumnIndex(FillUp.MONEY)) + "€");
-			}
-		}
-
-		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
-			final View view = LayoutInflater.from(context).inflate(R.layout.fillup_row, parent, false);
-			return view;
-		}
-    }
 
 	private boolean addFillUp() {
 		final FillUp newFillUp = mVehicle.addFillUp();
