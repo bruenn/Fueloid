@@ -55,7 +55,7 @@ public class VehicleTest extends AndroidTestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		mVehicle = new Vehicle(new FueloidDatabaseHelper(getContext()), 666);
+		mVehicle = Vehicle.create(new FueloidDatabaseHelper(getContext()), "testee");
 		/**
 		 *  add some dummy fill-ups matching this table:
 		 *  distance| date       |liter| money

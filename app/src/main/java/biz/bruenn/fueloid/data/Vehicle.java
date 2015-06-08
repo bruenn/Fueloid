@@ -70,13 +70,7 @@ public class Vehicle implements BaseColumns {
 		}
 	}
 
-	public Vehicle(FueloidDatabaseHelper dbHelper, long id) {
-		mDBHelper = dbHelper;
-		mId = id;
-		mTitle = "NONE";
-	}
-
-	public Vehicle(FueloidDatabaseHelper dbHelper, long id, String title) {
+	private Vehicle(FueloidDatabaseHelper dbHelper, long id, String title) {
 		mDBHelper = dbHelper;
 		mId = id;
 		mTitle = title;

@@ -39,6 +39,7 @@ public class VehicleSettings extends Activity {
 		switch(item.getItemId()) {
 			case R.id.action_accept:
 				mVehicle.setName(mName.getText().toString());
+				mVehicle.update();
 				finish();
 			default:
 				return super.onOptionsItemSelected(item);

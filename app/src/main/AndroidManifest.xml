@@ -14,10 +14,11 @@
         </activity>
         <activity android:name=".EditFillUp" />
         <activity android:name=".StatisticList" />
-        <activity android:name=".VehicleList" >
+        <activity
+            android:name=".VehicleList"
+            android:label="@string/title_activity_vehicle_list" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -26,10 +27,8 @@
             android:label="@string/title_activity_import_vehicle" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data android:mimeType="text/csv" />
                 <data android:pathPattern=".*" />
                 <data android:host="*" />

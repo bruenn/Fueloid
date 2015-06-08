@@ -39,7 +39,7 @@ public class StatisticList extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.statistic_list);
-        mVehicle = new Vehicle(new FueloidDatabaseHelper(this), getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
+        mVehicle = Vehicle.get(new FueloidDatabaseHelper(this), getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
         Statistic[] statistics = Statistic.getStatistics(mVehicle);
         mStatisticAdapter = new StatisticAdapter(this, R.layout.statistic_list_item, statistics);
 	    

@@ -46,6 +46,7 @@ public class FillUpList extends ListActivity {
 	FueloidDatabaseHelper mDBHelper;
 	FillUpAdapter mFillUpAdapter;
 	Vehicle mVehicle;
+	long mId;
 	
     /** Called when the activity is first created. */
     @Override
@@ -54,7 +55,7 @@ public class FillUpList extends ListActivity {
         setContentView(R.layout.main);
 
         mDBHelper = new FueloidDatabaseHelper(this);
-        mVehicle = new Vehicle(mDBHelper, getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
+        mVehicle = Vehicle.get(mDBHelper, getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
 	   
         mFillUpAdapter = new FillUpAdapter(this, mVehicle.getFillUpsCursor());
 	    
@@ -115,7 +116,9 @@ public class FillUpList extends ListActivity {
     }
     
     private void updateView() {
+		mVehicle = Vehicle.get(mDBHelper, mVehicle.mId);
 		mFillUpAdapter.changeCursor(mVehicle.getFillUpsCursor());
+		setTitle(mVehicle.getName());
     	TextView mDistance = (TextView)this.findViewById(R.id.vehicleDistance);
     	//TODO use a statistic object here
     	int distance = mVehicle.getDistance(1);

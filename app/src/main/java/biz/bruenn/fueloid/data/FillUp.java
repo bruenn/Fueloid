@@ -37,12 +37,8 @@ public class FillUp implements BaseColumns {
 	public static final String FILLDATE = "filldate";
 	public static final String LITER = "liter";
 	public static final String MONEY = "money";
-	public static final String COLID = TABLE_NAME + "." + _ID;
 	public static final String COLVEHICLE_ID = TABLE_NAME + "." + VEHICLE_ID;
-	public static final String COLDISTANCE = TABLE_NAME + "." + DISTANCE;
 	public static final String COLFILLDATE = TABLE_NAME + "." + FILLDATE;
-	public static final String COLLITER = TABLE_NAME + "." + LITER;
-	public static final String COLMONEY = TABLE_NAME + "." + MONEY;
 	public static final int MAX_DISTANCE = 3000000;// TODO
 	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	
@@ -75,7 +71,7 @@ public class FillUp implements BaseColumns {
 	private FillUp(FueloidDatabaseHelper openHelper, long id, long vehicleId, int distance, Date date, float liter, float money) {
 		mDBHelper = openHelper;
 		mId = id;
-		mVehicle = new Vehicle(openHelper, vehicleId);
+		mVehicle = Vehicle.get(openHelper, vehicleId);
 		mDistance = distance;
 		mFillDate.setTime(date);
 		mLiter = liter;
@@ -129,6 +125,10 @@ public class FillUp implements BaseColumns {
 		result = prime * result
 				+ ((mVehicle == null) ? 0 : mVehicle.hashCode());
 		return result;
+	}
+
+	public String getVehicleName() {
+		return mVehicle.getName();
 	}
 	
 	public final long getmId() {

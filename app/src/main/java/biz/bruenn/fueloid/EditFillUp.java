@@ -84,7 +84,8 @@ public class EditFillUp extends Activity {
     @Override
     public void onResume() {
     	super.onResume();
-    	
+
+		setTitle(mFillUp.getVehicleName());
     	//use listener callbacks to refresh view
     	mDateSetListener.onDateSet(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
     	mTimeSetListener.onTimeSet(null, mFillUp.getDateHours(), mFillUp.getDateMinutes());
