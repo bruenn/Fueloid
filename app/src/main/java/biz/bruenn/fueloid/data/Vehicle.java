@@ -106,7 +106,7 @@ public class Vehicle implements BaseColumns {
 
 	/**
 	 * Creates a vehicle object from a database cursor
-	 * @param context current context
+	 * @param openHelper helper object to access the database
 	 * @param cursor cursor to a database fill-up column
 	 * @return vehicle object representation or null if cursor was flawed
 	 */
@@ -193,6 +193,10 @@ public class Vehicle implements BaseColumns {
 		}
 		return addFillUp(last.getmDistance() + 1, new Date(), last.getmLiter(), last.getmMoney());
 	}
+
+	public int countFillups() {
+		return mDBHelper.countFillUps(mId, "<=", new GregorianCalendar());
+	}
 	
 	/**
 	 * Export all vehicle data into csv file
@@ -248,20 +252,15 @@ public class Vehicle implements BaseColumns {
 
 	/**
 	 * Retrieve the distance in a given time interval
-	 * @param startDate date of the first fill-up in interval
-	 * @param endDate date of the last fill-up in interval
+	 * @param start date of the first fill-up in interval
+	 * @param end date of the last fill-up in interval
 	 * @return	- the distance between latest fill-up <= startDate and latest fill-up <= endDate
 	 * <br>		- 0 in case of an error
 	 */
-	public int getDistance(GregorianCalendar startDate, GregorianCalendar endDate) {
-		
-		int startDistance = mDBHelper.queryDistanceForDate(mId, startDate);
-		int endDistance = mDBHelper.queryDistanceForDate(mId, endDate);
-		
-		if(endDistance > startDistance) {
-			return endDistance - startDistance;
-		}
-		return 0;
+	public int getDistance(GregorianCalendar start, GregorianCalendar end) {
+		final int distanceStart = mDBHelper.queryDistanceBeforeOrOldest(mId, start);
+		final int distanceEnd = mDBHelper.queryDistanceAfterOrYoungest(mId, end);
+		return distanceEnd - distanceStart;
 	}
 	
 	/**

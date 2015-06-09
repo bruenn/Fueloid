@@ -24,7 +24,7 @@ public class NumberStatistic extends Statistic {
 	
 	public NumberStatistic(Vehicle vehicle, int number) {
 		super(vehicle);
-		mNumber = number;
+		mNumber = Math.min(mVehicle.countFillups() - 1, number);
 	}
 
 	@Override

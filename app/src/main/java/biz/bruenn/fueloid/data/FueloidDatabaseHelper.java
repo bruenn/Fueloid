@@ -101,21 +101,72 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	    	return null;    		
 	    }
 	}
-    
-	public int queryDistanceForDate(long vehicleId, GregorianCalendar date) {
-		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(date.getTimeInMillis())};		
-		final String queryMinMaxDistance = "SELECT MAX(" + FillUp.DISTANCE + ") " +
-			"FROM " + FillUp.TABLE_NAME + " WHERE " +
-			FillUp.COLVEHICLE_ID + "=? AND " +
-			FillUp.COLFILLDATE + "<=?";
-		
+
+	private int queryInt(String query, String[] args) {
 		int result = 0;
-		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
+		Cursor c = protectedRawQuery(query, args);
 		if(null != c && c.getCount() > 0 && c.getColumnCount() == 1) {
 			result = c.getInt(0);
-		}		
+		}
 		if(null != c) c.close();
 		return result;
+	}
+
+	private int queryMaxDistanceBefore(long vehicleId, GregorianCalendar date) {
+		final String[] args = new String[] {
+				String.valueOf(vehicleId),
+				String.valueOf(date.getTimeInMillis())
+		};
+		final String query = "SELECT MAX(" + FillUp.DISTANCE + ") " +
+				"FROM " + FillUp.TABLE_NAME + " WHERE " +
+				FillUp.COLVEHICLE_ID + "=? AND " +
+				FillUp.COLFILLDATE + "<=?";
+		return queryInt(query, args);
+	}
+
+	private int queryMinDistanceAfter(long vehicleId, GregorianCalendar date) {
+		final String[] args = new String[] {
+				String.valueOf(vehicleId),
+				String.valueOf(date.getTimeInMillis())
+		};
+		final String query = "SELECT MIN(" + FillUp.DISTANCE + ") " +
+				"FROM " + FillUp.TABLE_NAME + " WHERE " +
+				FillUp.COLVEHICLE_ID + "=? AND " +
+				FillUp.COLFILLDATE + ">=?";
+		return queryInt(query, args);
+	}
+
+	public int queryDistanceAfterOrYoungest(long vehicleId, GregorianCalendar date) {
+		if (countFillUps(vehicleId, ">=", date) > 0) {
+			return queryMinDistanceAfter(vehicleId, date);
+		}
+		return queryMaxDistanceBefore(vehicleId, date);
+	}
+
+	public int queryDistanceBeforeOrOldest(long vehicleId, GregorianCalendar date) {
+		if (countFillUps(vehicleId, "<=", date) > 0) {
+			return queryMaxDistanceBefore(vehicleId, date);
+		}
+		return queryMinDistanceAfter(vehicleId, date);
+	}
+
+	public int p(long vehicleId, GregorianCalendar start, GregorianCalendar end) {
+		final int distanceStart = queryDistanceBeforeOrOldest(vehicleId, start);
+		final int distanceEnd = queryDistanceAfterOrYoungest(vehicleId, end);
+		return distanceEnd - distanceStart;
+	}
+
+	public int countFillUps(long vehicleId, String comperator, GregorianCalendar date) {
+		final String[] args = new String[] {
+				String.valueOf(vehicleId),
+				String.valueOf(date.getTimeInMillis())
+		};
+		final String query = "SELECT " + FillUp.DISTANCE +
+				" FROM " + FillUp.TABLE_NAME + " WHERE " +
+				FillUp.COLVEHICLE_ID + "=? AND " +
+				FillUp.COLFILLDATE + comperator +'?';
+		Cursor c = protectedRawQuery(query, args);
+		return (null != c) ? c.getCount() : 0;
 	}
     
 	public int queryDistanceForLast(long vehicleId, int numFillups) {
@@ -200,12 +251,20 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 	}
     
 	public float querySumInTimespan(String columnName, long vehicleId, GregorianCalendar start, GregorianCalendar end) {
-		final String[] args = new String[] {String.valueOf(vehicleId), String.valueOf(start.getTimeInMillis()), String.valueOf(end.getTimeInMillis())};		
+
+		final int distanceStart = queryDistanceBeforeOrOldest(vehicleId, start);
+		final int distanceEnd = queryDistanceAfterOrYoungest(vehicleId, end);
+
+		final String[] args = new String[] {
+				String.valueOf(vehicleId),
+				String.valueOf(distanceStart),
+				String.valueOf(distanceEnd)
+		};
 		final String queryMinMaxDistance = "SELECT SUM(" + columnName + ") " +
 			"FROM " + FillUp.TABLE_NAME + " WHERE " +
 			FillUp.COLVEHICLE_ID + "=? AND " +
-			FillUp.COLFILLDATE + ">=? AND " +
-			FillUp.COLFILLDATE + "<=?";
+			FillUp.DISTANCE + ">? AND " +
+			FillUp.DISTANCE + "<=?";
 		
 		float result = 0f;
 		Cursor c = protectedRawQuery(queryMinMaxDistance, args);
@@ -216,10 +275,9 @@ public class FueloidDatabaseHelper extends SQLiteOpenHelper {
 		return result;
 	}
     
-    public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {
-    	if(!isDBAvailable()) {
-    		return 0;
-    	}
-    	return mDatabase.update(table, values, whereClause, whereArgs);
+    public void update(String table, ContentValues values, String whereClause, String[] whereArgs) {
+    	if(isDBAvailable()) {
+			mDatabase.update(table, values, whereClause, whereArgs);
+		};
     }
 }
