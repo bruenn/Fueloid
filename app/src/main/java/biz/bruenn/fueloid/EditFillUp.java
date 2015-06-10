@@ -28,7 +28,10 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -73,26 +76,34 @@ public class EditFillUp extends Activity {
         
         mTime = (TextView)findViewById(R.id.fillupTime);
         mTime.setOnClickListener(mOnClickListener);
-    }
-    
-    @Override
-    protected void onPause() {
-    	super.onPause();
-    	mFillUp.update();
-    }
-    
-    @Override
-    public void onResume() {
-    	super.onResume();
 
 		setTitle(mFillUp.getVehicleName());
-    	//use listener callbacks to refresh view
-    	mDateSetListener.onDateSet(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
-    	mTimeSetListener.onTimeSet(null, mFillUp.getDateHours(), mFillUp.getDateMinutes());
+		//use listener callbacks to refresh view
+		mDateSetListener.onDateSet(null, mFillUp.getDateYear(), mFillUp.getDateMonth(), mFillUp.getDateDay());
+		mTimeSetListener.onTimeSet(null, mFillUp.getDateHours(), mFillUp.getDateMinutes());
 		mDistanceListener.valueChanged(String.valueOf(mFillUp.getmDistance()));
 		mLiterListener.valueChanged(String.valueOf(mFillUp.getmLiter()));
 		mMoneyListener.valueChanged(String.valueOf(mFillUp.getmMoney()));
     }
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.menu_settings, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()) {
+			case R.id.action_accept:
+				mFillUp.update();
+				finish();
+				return true;
+			default:
+				return super.onContextItemSelected(item);
+		}
+	}
 
 	private <T> void showDialog(String title, T value, SetValueDialog.OnValueChangedListener listener, int input) {
 		SetValueDialog d = new SetValueDialog();

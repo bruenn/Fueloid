@@ -48,7 +48,7 @@ public class VehicleSettings extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.menu_vehicle_settings, menu);
+		getMenuInflater().inflate(R.menu.menu_settings, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
 

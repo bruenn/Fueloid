@@ -24,7 +24,7 @@ public abstract class Statistic {
 
 	public static final Statistic[] getStatistics(Vehicle vehicle) {
 		return new Statistic[] {
-				new TimeStatistic(vehicle, 10000),
+				new NumberStatistic(vehicle, vehicle.countFillups() - 1),
 				new TimeStatistic(vehicle, 31),
 				new TimeStatistic(vehicle, 7),
 				new NumberStatistic(vehicle, 3),

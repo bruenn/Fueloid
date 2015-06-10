@@ -61,7 +61,6 @@ public class FillUpList extends ListActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-
 		getMenuInflater().inflate(R.menu.menu_fillup, menu);
 	}
     
