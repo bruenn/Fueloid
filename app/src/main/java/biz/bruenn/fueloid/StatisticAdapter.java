@@ -41,7 +41,7 @@ class StatisticAdapter extends ArrayAdapter<Statistic> {
 		title.setText(item.getTitle());
 
 		TextView text  = (TextView) view.findViewById(R.id.text);
-		text.setText(item.getLiterPerDistance() + "l/km | " + item.getDistance() + "km | " + item.getLiter() + "l | " + item.getMoney() + "€");
+		text.setText(item.getText());
 		return view;
 	}
 }

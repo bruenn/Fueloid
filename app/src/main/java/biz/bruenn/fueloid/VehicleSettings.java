@@ -20,8 +20,10 @@ package biz.bruenn.fueloid;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
@@ -43,6 +45,8 @@ public class VehicleSettings extends Activity {
 
 		mName = (EditText)findViewById(R.id.name);
 		mName.setText(mVehicle.getName());
+		mName.selectAll();
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 	}
 
 

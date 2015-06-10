@@ -32,12 +32,13 @@ public class StatisticList extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.statistic_list);
+        setContentView(R.layout.simple_list);
         mVehicle = Vehicle.get(new FueloidDatabaseHelper(this), getIntent().getLongExtra(Vehicle.TABLE_NAME, -1));
         Statistic[] statistics = Statistic.getStatistics(mVehicle);
         mStatisticAdapter = new StatisticAdapter(this, R.layout.icon_list_item, statistics);
 	    
-	    this.setListAdapter(mStatisticAdapter);
+	    setListAdapter(mStatisticAdapter);
+		setTitle(getResources().getString(R.string.title_activity_statistics) + ' ' + mVehicle.getName());
 	}
 
 }

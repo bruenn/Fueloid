@@ -27,6 +27,9 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import biz.bruenn.fueloid.data.FueloidDatabaseHelper;
+import biz.bruenn.fueloid.data.NumberStatistic;
+import biz.bruenn.fueloid.data.Statistic;
 import biz.bruenn.fueloid.data.Vehicle;
 
 class VehicleAdapter extends CursorAdapter {
@@ -45,7 +48,13 @@ class VehicleAdapter extends CursorAdapter {
 
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
+		Vehicle vehicle = Vehicle.get(new FueloidDatabaseHelper(context), cursor);
+		Statistic stats = new NumberStatistic(vehicle, vehicle.countFillups() - 1);
+
 		TextView title = (TextView) view.findViewById(R.id.title);
-		title.setText(cursor.getString(cursor.getColumnIndex(Vehicle.TITLE)));
+		title.setText(vehicle.getName());
+
+		TextView text = (TextView) view.findViewById(R.id.text);
+		text.setText(stats.getText());
 	}
 }

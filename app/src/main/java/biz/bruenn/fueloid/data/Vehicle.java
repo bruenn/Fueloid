@@ -110,7 +110,7 @@ public class Vehicle implements BaseColumns {
 	 * @param cursor cursor to a database fill-up column
 	 * @return vehicle object representation or null if cursor was flawed
 	 */
-	static Vehicle get(FueloidDatabaseHelper openHelper, Cursor cursor) {
+	public static Vehicle get(FueloidDatabaseHelper openHelper, Cursor cursor) {
 		if((null != cursor) && (cursor.getCount() > 0) && (cursor.getColumnCount() == 2)) {
 			try {
 				long id = cursor.getLong(cursor.getColumnIndexOrThrow(_ID));

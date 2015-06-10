@@ -40,6 +40,14 @@ public abstract class Statistic {
 	abstract public float getMoney();
 	abstract public CharSequence getTitle();
 
+	public String getText() {
+		return String.format("%.01f Ø | %d km | %.02f l | %.02f €",
+				getLiterPerDistance(),
+				getDistance(),
+				getLiter(),
+				getMoney());
+	}
+
 	public float getLiterPerDistance() {
 		int distance = getDistance();
 		if(distance > 0) {

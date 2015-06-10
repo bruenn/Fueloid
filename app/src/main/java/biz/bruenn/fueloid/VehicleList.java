@@ -39,7 +39,7 @@ public class VehicleList extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.vehicle_list);
+		setContentView(R.layout.simple_list);
 
 		mDBHelper = new FueloidDatabaseHelper(this);
 
@@ -96,7 +96,6 @@ public class VehicleList extends ListActivity {
 	}
 
 	private void updateView() {
-		this.getResources();
 		mVehicleAdapter.changeCursor(mDBHelper.queryVehicles());
 	}
 
