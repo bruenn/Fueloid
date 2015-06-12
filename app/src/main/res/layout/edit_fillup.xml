@@ -28,7 +28,7 @@
  	</LinearLayout>
  	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
 	 	<ImageView
-	        android:id="@+id/icon"
+	        android:id="@+id/iconDistance"
 	        android:layout_width="wrap_content"
 	        android:layout_height="fill_parent"
 	        android:layout_marginRight="6dip"
@@ -41,7 +41,7 @@
  	</LinearLayout>
  	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
 	 	<ImageView
-	        android:id="@+id/icon"
+	        android:id="@+id/iconLiter"
 	        android:layout_width="wrap_content"
 	        android:layout_height="fill_parent"
 	        android:layout_marginRight="6dip"
@@ -54,7 +54,7 @@
 	</LinearLayout>
 	<LinearLayout android:layout_width="fill_parent" android:layout_height="50dp">
 	 	<ImageView
-	        android:id="@+id/icon"
+	        android:id="@+id/iconMoney"
 	        android:layout_width="wrap_content"
 	        android:layout_height="fill_parent"
 	        android:layout_marginRight="6dip"
